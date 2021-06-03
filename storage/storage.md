@@ -2,7 +2,7 @@
 
 Up to: [DataONE Cluster Overview](../cluster-overview.md)
 
-The DataONE Kuberrnetes netwrok needs access to both local and persistent storage for use by both the cluster services and by applications that we deploy on the service. 
+The DataONE Kubernetes network needs access to both local and persistent storage for use by both the cluster services and by applications that we deploy on the service.
 
 ## Host-based local storage
 
