@@ -9,6 +9,7 @@ Documentation is organized into an overview, and then separate config files and 
 - [Cluster Overview](cluster-overview.md)
     - [Network](network/network.md)
     - [Ceph Storage](storage/storage.md)
+    - [Control Plane](control-plane/control-plane.md)
 
 
 [![dataone_footer](https://www.dataone.org/sites/all/images/DataONE_LOGO.jpg)](https://www.dataone.org)
