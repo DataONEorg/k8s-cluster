@@ -1,0 +1,42 @@
+---
+# This Role and Rolebinding example gives all permissions to the 'slinky' Service account,
+# but limited to only the 'slinky' namespace.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  #name: mynamespace-user
+  name: slinky
+  namespace: slinky
+
+---
+kind: Role
+#apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: slinky
+  namespace: slinky
+rules:
+- apiGroups: ["", "extensions", "apps"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["batch"]
+  resources:
+  - jobs
+  - cronjobs
+  verbs: ["*"]
+
+---
+kind: RoleBinding
+#apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: slinky
+  namespace: slinky
+subjects:
+- kind: ServiceAccount
+  name: slinky
+  namespace: slinky
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: slinky
