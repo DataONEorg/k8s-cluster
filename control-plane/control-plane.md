@@ -92,8 +92,40 @@ spec:
 The LE certificate and secret are maintained by DataONE admin scripts.
 Since the ingress resources exist in each service namespace, this secret can be repeated in each namespace, but it appears that the NIC only requires it to be in one namespace. This may be a result of the NIC appending together (in memory) all ingresses that it detects.
 
-#### NodePoart
+#### NodePort
 
 The DataONE NIC is configured to use a k8s NodePort service, as described in [Bare-metal considerations](https://kubernetes.github.io/ingress-nginx/deploy/baremetal/#over-a-nodeport-service). 
 This configuration provides external access to DataONE services via a URL that specified the port that is made available via the NodePort service.
 
+
+#### Deploying The NGINX Ingress Controller
+
+The manifest files in the *nginx-ingress-controller* directory have been extracted from the deploy.yaml. The webhook capabilities of the NGINX ingress controller are not being used, so those manifests are not included, for example *controller-service-webhook.yaml* is not used.
+
+The following commands are used to configure resources and RBAC, and only need to be invoked once, or when upgrades or modifications are made:
+
+```
+kubectl create -f namespace.yaml
+kubectl create -f clusterrolebinding.yaml
+kubectl create -f clusterrole.yaml
+kubectl create -f controller-configmap.yaml
+kubectl create -f controller-rolebinding.yaml
+kubectl create -f controller-role.yaml
+kubectl create -f controller-serviceaccount.yaml
+kubectl create -f controller-ingressclass.yaml
+```
+
+These next commands start the NGINX Ingress Controller pod and service
+
+```
+kubectl create -f controller-deployment.yaml
+kubectl create -f controller-service.yaml
+```
+
+Next, an ingress resource is created for each service that the ingress controller will provide routing for:
+
+```
+kubectl create -f ingress-metadig.yaml
+```
+
+Note that `ingress-metadig.yaml` is part of the *MetaDIG* service, but is included here for illustration.
