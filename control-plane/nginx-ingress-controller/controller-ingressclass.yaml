@@ -3,6 +3,7 @@ kind: IngressClass
 metadata:
   # this name must match the --ingress-class flag
   name: nginx
+  namespace: ingress-nginx
   annotations:
   # optional: flag this as default ingclass
     ingressclass.kubernetes.io/is-default-class: "true"
