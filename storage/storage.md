@@ -10,7 +10,9 @@ Describe what host-based storage is in use, and how we plan to transition off of
 
 ## Ceph-based storage cluster
 
-Describe the Ceph cluster and its features...
+Ceph (https://docs.ceph.com/en/pacific/rados/index.html) is an open-source software storage platform that is available for use with Kubernetes (k8s) and requires installing the open-source storeage plugin Ceph CSI (https://github.com/ceph/ceph-csi)
+
+Details of the DataONE k8s usage of Ceph via Ceph CSI is [here](../Ceph/Ceph-CSI.md)
 
 ## Persistent Volumes for applications
 
