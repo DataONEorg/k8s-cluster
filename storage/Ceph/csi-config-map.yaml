@@ -26,7 +26,7 @@ data:
   config.json: |-
     [
       {
-        "clusterID": "8aa4d4a0-a209-11ea-baf5-ffc787bfc812",
+        "clusterID": <clusterId>,
         "monitors": [
           "10.0.3.197:6789",
           "10.0.3.207:6789",
