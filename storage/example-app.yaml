@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: busybox
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      containers:
+      - name: busybox
+        image: docker.io/busybox:1.29
+        args: [sh, -c, 'sleep 9999999999']
+        volumeMounts:
+          - name: cephfs-gnis-pv
+            mountPath: /var/lib/www/html
+      volumes:
+        - name: cephfs-gnis-pv
+          persistentVolumeClaim:
+            claimName: cephfs-gnis-pvc
+            readOnly: false
