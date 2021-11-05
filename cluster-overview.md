@@ -21,3 +21,4 @@ Details of the cluster are provided in the fillowing sections:
     - [Network](network/network.md)
     - [Ceph Storage](storage/storage.md)
     - [Control Plane](control-plane/control-plane.md)
+    - [Authorization](authorization/authorization.md)
