@@ -40,7 +40,11 @@ An example of dynamic provisioning is described in Ceph-CSI RBD.
 
 ## Ceph-based Volumes
 
-Ceph (https://docs.ceph.com/en/pacific/rados/index.html) is an open-source software storage platform that is available for use with Kubernetes (k8s) and requires installing the open-source storeage plugin Ceph CSI (https://github.com/ceph/ceph-csi). The Ceph CSI plugin provides communication between k8s and the Ceph Cluster so that pods can access disk storage on the cluster.
+Ceph (https://docs.ceph.com/en/pacific/rados/index.html) is an open-source software storage platform that is available for use with Kubernetes (k8s).
+
+k8s can access storage systems if a storage driver is available for the storage system. Storage driver used by k8s must adhere to the [Container Storage Interface](https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/) specification. These plugins can either be included with the k8s release, or provided as separate software.
+
+The storage driver for Ceph is available the [Ceph CSI](https://github.com/ceph/ceph-csi) github repo. This driver must be installed and running on k8s before Ceph volumes can be accessed by k8s pods.
 
 Details of the DataONE k8s usage of Ceph via Ceph CSI is [here](../Ceph/Ceph-CSI.md)
 
