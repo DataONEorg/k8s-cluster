@@ -20,33 +20,33 @@ A Persistent Volume Claim is a k8s object that is used by a pod to request the u
 
 Static PVs are created after a system administrator has manually created an OS file system or disk partition, depending on storage type. This file system will be described in a PV manifest (.yaml file). The PV manifest is used to manually create the k8s PV object.
 
-When the PV is created, then a PVC can be created that referenced the PV. 
+After the PV is created, then a PVC can be created that referenced the PV. 
 
 Pods reference the PVC in order to use the storage that was requested with the PVC.
 
-An example of static provisioning is described in Ceph-CSI CephFS.
+An example of static provisioning is described in [Ceph-CSI CephFS](./Ceph/Ceph-CSI-CephFS.md).
 
 ### Dynamically Provisioned Persistent Volumes
 
-PVs can be created dynamically by first creating a Storage Class (SC) that described howis a PV can be created from a storage system. The underlying storage system and k8s storage driver for this system must support the creation of dynamically created PVs.
+PVs can be created dynamically by first creating a k8s Storage Class (SC) that described how a PV should be created from a storage system. The underlying storage system and k8s storage driver for this system must support the creation of dynamically created PVs.
 
 For dynamically provisioned PVs, a PV object manifest is not required.
 
-Once the SC has been created, a PVC can be created that references the SC. When a pod references the PVC, the storage driver will then call it's storage provisioner  that will search for a volume SC that statisfiees the PVC request, and the PV will be created for the pod.
+Once the SC has been created, a PVC can be created that references the SC. When a pod references the PVC, the storage driver will then call it's storage provisioner that will search for a volume SC that satisfies the PVC request, and then the PV will be created for the pod.
 
 Dynamically created PVs will persist as long as the PVC that referenced it exists. Once the PVC is deleted, the referenced PV is deleted. However, if the SC was configured such that the created volume is retained, the underlying storage is not erased and can be manually accessed.
 
-An example of dynamic provisioning is described in Ceph-CSI RBD. 
+An example of dynamic provisioning is described in [Ceph-CSI RBD](./Ceph/Ceph-CSI-RBD.md). 
 
 ## Ceph-based Volumes
 
-Ceph (https://docs.ceph.com/en/pacific/rados/index.html) is an open-source software storage platform that is available for use with Kubernetes (k8s).
+[Ceph](https://docs.ceph.com/en/pacific/rados/index.html) is an open-source software storage platform that can be configured for use with Kubernetes (k8s).
 
-k8s can access storage systems if a storage driver is available for the storage system. Storage driver used by k8s must adhere to the [Container Storage Interface](https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/) specification. These plugins can either be included with the k8s release, or provided as separate software.
+k8s can access a storage systems if a storage driver is available for the storage system. Storage drivers used by k8s must adhere to the [Container Storage Interface](https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/) specification. These plugins can either be included with the k8s release, or provided as separate software.
 
-The storage driver for Ceph is available the [Ceph CSI](https://github.com/ceph/ceph-csi) github repo. This driver must be installed and running on k8s before Ceph volumes can be accessed by k8s pods.
+The CSI storage driver for Ceph is available from the [Ceph CSI](https://github.com/ceph/ceph-csi) github repo. This driver must be installed and running on k8s before Ceph volumes can be accessed by k8s pods.
 
-Details of the DataONE k8s usage of Ceph via Ceph CSI is [here](../Ceph/Ceph-CSI.md)
+Details of the DataONE k8s usage of Ceph via Ceph CSI is [here](./Ceph/Ceph-CSI.md)
 
 
 

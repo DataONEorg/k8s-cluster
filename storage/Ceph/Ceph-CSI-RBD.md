@@ -1,11 +1,18 @@
 
-# Ceph CSI CephFS
+# Ceph CSI RBD
 
-Back to: [Ceph](./Ceph.md)
+Back to: [Ceph-CSI](./Ceph-CSI.md)
 
 ## Provisioning Static Volumes with Ceph CSI RBD
 
-### Persistent Volume 
+The Ceph CSI k8s driver can provision k8s persistent volumes (PVs) as RBD images. With static provisioning, the Ceph RBD image must be created manually before it can be accessed by Ceph-CSI.
+
+Note that accessing Ceph storage in this way currently does not allow multiple k8s pods to access the same storage in RWX (read write many) mode. 
+
+### Persistent Volume
+
+Here is the example PV manifest, `rbd-static-pv.yaml`:
+
 
 ```
 apiVersion: v1
@@ -60,6 +67,9 @@ sudo rbd -n client.k8sdevrbd --keyring=/etc/ceph/ceph.client.k8sdevrbd.keyring l
 
 ### Persistent Volume Claim
 
+The persistent volume claim (PVC) makes the PV available to a pod, and is created in a particular namespace. Here is an example, `rbd-static-pvc.yaml`:
+
+
 ```
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -83,6 +93,10 @@ spec:
 
 ## Provisioning Dynamic Volumes with Ceph CSI RBD
 ### Storage Class
+
+For dynamically provisioned PVs, creating a PV manifest is not required. Instead a Storage Class (SC) description is created. 
+
+Here is an example RBD SC manifest:
 
 ```
 ---
@@ -138,7 +152,11 @@ reclaimPolicy: Retain
 allowVolumeExpansion: false
 
 ```
+
 ### Persistent Volume Claim
+
+Once the SC has been created, a PVC can be created:
+
 
 ```
 ---
@@ -158,6 +176,8 @@ spec:
 ```
 
 ### Using The Persistent Volume Claim
+
+After the SC and PVC have been created, pods can reference the PVC. When the pod is started, the Ceph-CSI driver is accessed and an RBD image is dynamically created for the pod. Here is an example pod that accesses the PVC:
 
 ```
 apiVersion: apps/v1

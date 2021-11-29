@@ -3,18 +3,19 @@
 
 Up to: [Storage provisioning](../storage.md)
 
-The Ceph Container Storage Interface (CSI) driver (https://github.com/ceph/ceph-csi) for Ceph Rados Block Device (RBD) and Ceph File System (CephFS) can be used to provide Ceph storage to applications running on k8s. 
+The [Ceph Container Storage Interface](https://github.com/ceph/ceph-csi) (CSI) driver for Ceph Rados Block Device (RBD) and Ceph File System (CephFS) can be used to provide Ceph storage to applications running on k8s. 
 
 The Ceph CSI driver can provision static or dynamic Persistent Volumes (PV) for either RADOS Block Devices (RBD) or Ceph File System (CephFS) volumes.
+
 A separate driver is required for RBD and CephFS, which can be installed using Helm.
 
 Note that accessing RBD images with Ceph CSI currently does not allow multiple k8s pods to access the same storage in RWX (read write many) mode.
 
 ## Installing Ceph CSI RBD Plugin
 
-Ceph CSI RBD helm installation instructions can be found [here](https://github.com/ceph/ceph-csi/blob/devel/charts/ceph-csi-rbd/README.md).
+Ceph CSI RBD helm installation information can be found [here](https://github.com/ceph/ceph-csi/blob/devel/charts/ceph-csi-rbd/README.md).
 
-Command line options to helm supply most of the information that is needed for the installation. Two items that need to be manually created and installed are the `secret.yaml`, and `csi-config-map.yaml` files.
+Command line options to helm supply most of the information that is needed for the installation. Two items that need to be manually created and installed befor the helm installatin are the `secret.yaml`, and `csi-config-map.yaml` files.
 
 Here is an example `csi-config-map.yaml` file:
 
@@ -68,7 +69,7 @@ The Ceph cluster id and monitor addresses can be obtained with the command:
 sudo ceph -n client.k8sdev --keyring=/etc/ceph/ceph.client.k8sdev.keyring mon dump
 ```
 
-This example shows the required command for the DataONE k8s cluster only. Appropriate values must be substituted for the production cluster when installing there.
+This example shows the required command for the DataONE k8s development cluster only. Appropriate values must be substituted for the production cluster when installing there.
 
 The `secret.yaml` file contains the ceph storage cluster login credentials needed for ceph-csi to mount Ceph RBD images that are statically provisioned, or to create RBD images for dynamically provisioned voluems. For statically provisioned PVs, RBD images are created manually with the Linux `ceph` utility.
 
@@ -129,14 +130,18 @@ The plugin can be stopped and uninstalled with the command:
 helm uninstall "ceph-csi-rbd" --namespace "ceph-csi-rbd"
 ```
 
-An example of using the RBD plugin provided [here](./RBD/Ceph-CSI-rbd.mdstorage.md)
+An example of using RBD based storage with k8s is provided [here](./Ceph-CSI-rbd.md)
 
 ## Installing Ceph CSI CephFS Plugin
 
-Ceph CSI CephFS helm installation instructions can be found at https://github.com/ceph/ceph-csi/tree/devel/charts/ceph-csi-cephfs#readme.
+Ceph CSI CephFS helm installation instructions can be found [here](https://github.com/ceph/ceph-csi/tree/devel/charts/ceph-csi-cephfs#readme).
 Command line options to helm supply most of the information that is needed for the installation. Two items that need to be manually created and installed are the `secret.yaml`, and `csi-config-map.yaml` files.
 
-The `secret.yaml` file contains the ceph storage cluster login credentials needed for ceph-csi to mount CephFS subvolumes that are statically provisioned. These statically provisioned subvolumes have been created manually with the Linux `ceph` utility. The `userId` and `userKey` values provide the needed authorization for this. Note that for dynamically provisioned (ceph-csi provisions them) CephFS volumes and subvolumes, the `adminId` and `adminKey` values are required. The values for these items can be found in the /etc/ceph directory of the k8s control nodes.
+The `secret.yaml` file contains the ceph storage cluster login credentials needed for ceph-csi to mount CephFS subvolumes that are statically provisioned. These CephFS subvolumes must be created manually with the Linux `ceph` utility before they can be accessed by ceph-csi.
+
+The `userId` and `userKey` values provide the needed authorization for this. Note that for dynamically provisioned (ceph-csi provisions them) CephFS volumes and subvolumes, the `adminId` and `adminKey` values are required.
+
+Currently for DataONE, only statically provisioned CephFS subvolumes are used. Also, currently this ceph-csi feature is only in Alpha release state, so is not ready for production use. Please refer to the [Ceph-CSI Support Matrix](https://github.com/ceph/ceph-csi#support-matrix) for more information.
 
 ```
 ---
@@ -233,5 +238,5 @@ The plugin can be stopped and uninstalled with the command:
 helm uninstall "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
 ```
 
-The `secret.yaml` file contains the Ceph credentials needed for the plugin to access CephFS subvolumes that have been manually provisioned by the Ceph system administrator. Currently for DataONE, only statically provisioned CephFS subvolumes are used, as Ceph admin priviledge is required. Also, currently this feature is only in Alpha release state, so is not ready for production use. Please refer to the [Ceph-CSI Support Matrix](https://github.com/ceph/ceph-csi#support-matrix) for more information.
+An example of using CephFS based storage with k8s is provided [here](./Ceph-CSI-cephfs.md)
 

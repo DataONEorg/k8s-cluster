@@ -1,20 +1,19 @@
 
 # Ceph CSI CephFS
 
-Back to: [Ceph](./Ceph.md)
+Back to: [Ceph-CSI](./Ceph-CSI.md)
 
-The Ceph Container Storage Interface (CSI) driver (https://github.com/ceph/ceph-csi) for Ceph Rados Block Device (RBD) and Ceph File System (CephFS) can be used to provide Ceph storage to applications running on k8s. 
-
-The Ceph CSI k8s driver can provision k8s persistent volumes (PVs) as RBD (RADOS Block Devices) images, but accessing Ceph storage in this way currently does not allow multiple k8s pods to access the same storage in RWX (read write many) mode. For this reason, Ceph CSI is used to provision PVs based on CephFS. 
-
+The [Ceph Container Storage Interface (CSI) driver](https://github.com/ceph/ceph-csi) for Ceph Rados Block Device (RBD) and Ceph File System (CephFS) can be used to provide Ceph storage to applications running on k8s. 
 
 ## Provisioning Static CephFS Volumes
 
 Each CephFS subvolume will correspond to a k8s persistent volume (PV). Because the ceph-csi cephfs plugin is being used, this PV can be mounted RWX, meaning that the PV can be mounted for write access by multiple k8s pods on multiple nodes.
 
-Directions for manually creating the CephFS subvolumes are shown here https://github.nceas.ucsb.edu/NCEAS/Computing/blob/master/cephfs.md#commands-used-to-create-cephfs-subvolumes-on-the-dataone-ceph-cluter-ceph-15.
+Directions for manually creating the CephFS subvolumes are shown [here](https://github.nceas.ucsb.edu/NCEAS/Computing/blob/master/cephfs.md#commands-used-to-create-cephfs-subvolumes-on-the-dataone-ceph-cluter-ceph-15).
 
-Once a ceph subvolume has been created, and the ceph-cis cephfs plugin has been started, it can be mounted as a k8s PV. For example, the file `cephfs-static-pv.yaml`:
+Once a ceph subvolume has been created, and the ceph-cis cephfs plugin has been started, it can be mounted as a k8s PV. 
+
+Here is the example PV manifest, `cephfs-static-pv.yaml`:
 
 ```
 apiVersion: v1
@@ -63,6 +62,8 @@ The CephFS subvolume can be mounted by Linux, so that it can be accessed via the
 ```
 mount -t ceph 10.0.3.197:6789,10.0.3.207:6789,10.0.3.214:6789,10.0.3.222:6789,10.0.3.223:6789:/volumes/k8sdevsubvolgroup/k8sdevsubvol/4b7cd044-4055-49c5-97b4-d1240d276856 /mnt/k8sdevsubvol
 ```
+
+It is not necessary to mount the subvolume with this Linux command in order for Ceph-CSI to access it.
 
 ## Persistent Volume Claim
 
