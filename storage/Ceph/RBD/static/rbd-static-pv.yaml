@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ceph-rbd-static-pv
+spec:
+  accessModes:
+  # - ReadWriteOncePod - not supported by k8s v1.22.2
+  - ReadWriteOnce
+  #- ReadWriteMany
+  capacity:
+    storage: 1Gi
+  csi:
+    driver: rbd.csi.ceph.com
+    fsType: ext4
+    nodeStageSecretRef:
+      # node stage secret name
+      name: csi-rbd-secret
+      # node stage secret namespace where above secret is created
+      namespace: ceph-csi-rbd
+    volumeAttributes:
+      # Required options from storageclass parameters need to be added in volumeAttributes
+      "clusterID": <cluster Id>
+      "pool": "k8sdev-pool-ec42-metadata"
+      "staticVolume": "true"
+      "imageFeatures": "layering"
+      #mounter: rbd-nbd
+    # volumeHandle should be same as rbd image name
+    #volumeHandle: static-image
+    volumeHandle: k8sdevtest
+  persistentVolumeReclaimPolicy: Retain
+  # The volumeMode can be either `Filesystem` or `Block` if you are creating Filesystem PVC it should be `Filesystem`, if you are creating Block PV you need to change it to `Block`
+  volumeMode: Filesystem

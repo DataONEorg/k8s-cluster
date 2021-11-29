@@ -62,6 +62,14 @@ metadata:
   namespace: ceph-csi-rbd
 ```
 
+The Ceph cluster id and monitor addresses can be obtained with the command:
+
+```
+sudo ceph -n client.k8sdev --keyring=/etc/ceph/ceph.client.k8sdev.keyring mon dump
+```
+
+This example shows the required command for the DataONE k8s cluster only. Appropriate values must be substituted for the production cluster when installing there.
+
 The `secret.yaml` file contains the ceph storage cluster login credentials needed for ceph-csi to mount Ceph RBD images that are statically provisioned, or to create RBD images for dynamically provisioned voluems. For statically provisioned PVs, RBD images are created manually with the Linux `ceph` utility.
 
 The `userId` and `userKey` values provide the needed authorization for this. These values can be found in the /etc/ceph directory of the k8s control nodes.

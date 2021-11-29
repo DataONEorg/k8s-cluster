@@ -76,7 +76,7 @@ spec:
     requests:
       storage: 1Gi
   # The volumeMode can be either `Filesystem` or `Block` if you are creating Filesystem PVC it should be `Filesystem`, if you are creating Block PV you need to change it to `Block`
-  volumeMode: Filesystem
+  volumeMode: Filesystem/
   # volumeName should be same as PV name
   volumeName: ceph-rbd-static-pv
 ```
@@ -103,7 +103,7 @@ parameters:
    # Ensure to create an entry in the configmap named ceph-csi-config, based on
    # csi-config-map-sample.yaml, to accompany the string chosen to
    # represent the Ceph cluster in clusterID below
-   clusterID: 8aa4d4a0-a209-11ea-baf5-ffc787bfc812
+   clusterID: <cluster id>
 
    # (optional) If you want to use erasure coded pool with RBD, you need to
    # create two pools. one erasure coded and one replicated.

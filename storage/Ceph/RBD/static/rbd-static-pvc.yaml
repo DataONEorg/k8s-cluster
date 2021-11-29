@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ceph-rbd-static-pvc
+  namespace: ceph-csi-rbd
+spec:
+  accessModes:
+  # ReadWriteMany is only supported for Block PVC
+  - ReadWriteOnce
+  #- ReadWriteOncePod - not supported k8s v1.22.2
+  resources:
+    requests:
+      storage: 1Gi
+  # The volumeMode can be either `Filesystem` or `Block` if you are creating Filesystem PVC it should be `Filesystem`, if you are creating Block PV you need to change it to `Block`
+  volumeMode: Filesystem
+  # volumeName should be same as PV name
+  volumeName: ceph-rbd-static-pv

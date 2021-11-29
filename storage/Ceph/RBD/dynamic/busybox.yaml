@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox 
+  namespace: ceph-csi-rbd
+spec:
+  selector:
+    matchLabels:
+      app: busybox
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      #serviceAccountName: metadig-serviceaccount
+      #volumes:
+      #- name: gluster-volume
+      #  persistentVolumeClaim:
+      #    claimName: gluster-pv-claim
+      containers:
+      - name: busybox
+        image: docker.io/busybox:1.29
+        args: [sh, -c, 'sleep 9999999999']
+        volumeMounts:
+          - name: mypvc
+            mountPath: /var/lib/www/html
+      volumes:
+        - name: mypvc
+          persistentVolumeClaim:
+            claimName: ceph-rbd-pvc
+            readOnly: false
