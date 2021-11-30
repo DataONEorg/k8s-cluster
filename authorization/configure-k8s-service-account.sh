@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script creates the authorization needed to run an app on the DataONE k8s cluster.
-# A a k8s namespace, service account and kubectl context are created. 
+# A k8s namespace, service account and kubectl context are created.
 set -e
 set -o pipefail
 
@@ -16,8 +16,9 @@ fi
 SERVICE_ACCOUNT_NAME=$1
 NAMESPACE="$1"
 TARGET_FOLDER="${HOME}/.kube"
-#KUBECFG_FILE_NAME="${TARGET_FOLDER}/${SERVICE_ACCOUNT_NAME}.config"
-KUBECFG_FILE_NAME="${TARGET_FOLDER}/config"
+CONFIG="${TARGET_FOLDER}/config"
+KUBECFG_FILE_NAME="${TARGET_FOLDER}/${SERVICE_ACCOUNT_NAME}.config"
+TODAY=$(date +'%Y-%m-%d-%H%M%S')
 
 create_target_folder() {
     echo -n "Creating target directory to hold files in ${TARGET_FOLDER}..."
@@ -95,6 +96,15 @@ set_kube_config_values() {
     --cluster="${CLUSTER_NAME}"
 }
 
+flatten_config() {
+    # To merge two config files, add them both to the KUBECONFIG list, then use `--flatten`
+    echo -e "\\nFlattening and merging the ${NAMESPACE} config"
+    cp ${CONFIG} ${CONFIG}.bak-${TODAY}
+    KUBECONFIG=${CONFIG}:${KUBECFG_FILE_NAME} kubectl config view --flatten > ${CONFIG}-flattened-${NAMESPACE}
+    mv ${CONFIG}-flattened-${NAMESPACE} ${CONFIG}
+}
+
+echo "Starting on ${TODAY}..."
 create_target_folder
 create_namespace
 create_service_account
@@ -102,6 +112,7 @@ get_secret_name_from_service_account
 extract_ca_crt_from_secret
 get_user_token_from_secret
 set_kube_config_values
+flatten_config
 
 echo -e "\\nAll done! Test with:"
 echo "KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get pods"
