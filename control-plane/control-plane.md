@@ -30,102 +30,99 @@ The DataONE k8s Cluster uses the [NGINX ingress controller](https://github.com/k
 
 ### Installation:
 
-The NIC is installed using the instructions for a [bare-metal installation](https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal). The default is to install using the pre-created Helm charts or to use the filled out manifest file (aka deployment file). After the installation completes, then [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#the-ingress-resource) resources can be added. If the ingresses are configured correctly, the NIC will detect and use them, thereby enabling routing to the DataONE k8s services.
+The NIC is installed using the instructions for a [bare-metal installation](https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal). 
+The NIC can be installed using helm v3+, using the following command:
 
-The DataONE NIC installation currently uses a modified version of the [deployment manifest file](https://github.com/kubernetes/ingress-nginx/blob/dev-v1/deploy/static/provider/baremetal/deploy.yaml). The modifications to the default deployment file are described in the next section. Note that the deployment file is an aggregation of all manifest files needed to configure resources and start services for the NIC.
+```
+helm upgrade --install ingress-nginx ingress-nginx \
+  --version=4.0.6 \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  --set controller.admissionWebhooks.enabled=false \
+  --set controller.defaultBackend.enabled=true \
+  --set controller.ingressClassResource.default=true \
+  --set controller.ingressClassResource.name=nginx \
+  --set controller.service.externalIPs={128.111.85.192} \
+  --set controller.service.type=NodePort
+```
+
+The current version of the NIC can be determined by using the command:
+
+```
+$ helm search repo ingress-nginx
+NAME                        CHART VERSION APP VERSION DESCRIPTION
+ingress-nginx/ingress-nginx 4.0.8         1.0.5       Ingress controller for Kubernetes using NGINX a...
+```
+Note that the version of the most recent `released` chart should be specified, so that the development `canary` version is not installed, which is the default.
+
+Note that this NIC configuration uses the k8s `externalIP` mechanism to make the k8s `ingress-nginx-controller` service accessible to clients that are external to the k8s network. The IP selected is for one of the k8s nodes that is accessible from any client address. The above example is for the DataONE production k8s cluster and uses the IP address of the control node `k8s-ctrl-1.dataone.org`.
+
+Note that some clients may still be referrencing ports `30080` or `30443` instead of the standard `80` and `443`. The NIC helm chart does not support configuring these ports via the helm command line, so the NIC service definition has to be manually configured to add these extra ports. To do this:
+<ol>
+  <li>Install NGINX Ingress Controller with the command shown above</li>
+  <li>Manually create the NIC service defintion file using helm</li>
+  Helm can generate manifest files that are equivalent to the installation performed with the `upgrade` command. Use the following command to generate the composite YAML file:
+  
+```
+  helm template ingress-nginx ingress-nginx \
+  --dry-run --debug \
+  --version=4.0.6 \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  --set controller.admissionWebhooks.enabled=false \
+  --set controller.defaultBackend.enabled=true \
+  --set controller.ingressClassResource.default=true \
+  --set controller.ingressClassResource.name=nginx \
+  --set controller.service.type=NodePort \
+  --set controller.service.externalIPs={128.111.85.190} > nginx-deploy.yaml
+```
+  <li>Add the required ports to the definition</li>
+  Extract the section for `controller-service.yaml` from the file `nginx-deploy.yaml` with a text editor, to the file `controller-service-additional-ports.yaml`, and add the following lines to the `spec.ports` section, under the `-name: https` item:
+  
+  ```
+    - name: http2
+      port: 30080
+      protocol: TCP
+      targetPort: http
+      appProtocol: http
+    - name: https2
+      port: 30443
+      protocol: TCP
+      targetPort: https
+      appProtocol: https
+  ```
+      
+  <li>Update the definition/li>
+  The NGINX Ingress Controller is already running from the `helm` update command above, so now modify the NIC service to add the additional ports with the command:
+```
+kubectl apply -f controller-service-additional-ports.yaml
+```
+<li>Check that the ports are available</li>
+Use `kubectl` to check that all desired ports are available.
+
+```
+$ kubectl get service ingress-nginx-controller -n ingress-nginx
+NAME                       TYPE       CLUSTER-IP      EXTERNAL-IP      PORT(S)                                                      AGE
+ingress-nginx-controller   NodePort   10.102.44.189   128.111.85.192   80:31590/TCP,443:30443/TCP,30080:32036/TCP,30443:31257/TCP   19d
+```
+</ol>
+
+Note that once the additional ports `30080` and `30443` are no longer required by client programs, these additional steps will no longer be required after the `helm` upgrade command.
 
 ### Configuration
 #### Ingress Class
 The NIC requires that a k8s [IngressClass](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class) is defined. This associates the NIC with one class of ingress. Using this approach, it is therefore
 possible to have multiple ingress controllers of different types (i.e. HAproxy ingress controller, NGINX ingress controller...), running on the same cluster.
 
-When the NIC is started, it is told which class of ingress to use by specifying the command line argument `--ingress-class=<namespace><ingress class name>`, for example ` --ingress-class=nginx`. After staring, the NIC will inspect ingress objects from all namespaces and use the ones that have a class name that matches the one it is using. (Attempting to have multiple classes defined for the DataONE NIC has not been attempted.)
+An *IngressClass* resource is automatically created by the helm installation, so does not need to be manually created or configured.
 
-The default ingress class specified in the deploy.yaml file includes the namespace and class name:
-
-```
-            - --ingress-class=$(POD_NAMESPACE)/nginx
-```
-
-This has been modified to not specify the namespace, so that the NIC will search in all namespaces for ingress resources.
-
-```
-            - --ingress-class=nginx 
-```
-
-Note that an *IngressClass* defintion is associated with a particular ingress controller with the 'spec.controller' value, for example from `controller-ingressclass.yaml` section of `deploy.yaml`:
-
-```
-spec:
-  controller: "k8s.io/ingress-nginx"
-```
-
-The value `k8s.io/ingress-nginx` is hard-coded in the NIC software and is unique the the NIC.
-
-Therefore, both of thse steps are required:
-
-- specify the ingress controller to use in the *Ingressclass* defintion
-- specify the ingress class to use from the ingress controller deployment manifest.
+When the NIC is started it will search all namespaces for `Ingress` objects with an ingress class that matches the ingress class name `nginx`. DataONE is currently only using a single NIC, but it is possible to have multiple NICs for a k8s cluster, with each one managing its own class.
 
 #### Ingress
-An [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#the-ingress-resource) resource specifies the routing from the ingress controller NodePort to a k8s service. See [ingress-metadig](TODO: provide link) for an example.
+An [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#the-ingress-resource) resource specifies the routing from the ingress controller NodePort to a k8s service. See [ingress-metadig](TODO: provide link) for an example. Each k8s application that runs on the k8s cluster must create an `Ingress` resource in order to provide routing. In addition, the `cert-manager` facility interacts with the `Ingress` resource to provide a Let's Encrypt certificate for TLS termination for the service (this is describe in the `Authentication` section).
 
-These ingress resources are defined in the same namespace as the services that they route to, so for example, the `metadig` ingress is defined in the `metadig` namespace, where the `metadig-controller` service that it routes to is located.
+These ingress resources are created in the same namespace as the services that they route to, so for example, the `metadig` ingress is defined in the `metadig` namespace, where the `metadig-controller` service that it routes to is located.
 
-Note that the NIC will continue to scan for ingress objects and add them as required. 
+Note that the NIC will continue to scan for ingress objects that match the ingress class `nginx` and will setup routing when ingress resources are added. 
 
 A separate ingress resource is defined for each DataONE service, for example the `gnis` service in the `gnis` namespace, with a separate ingress resource, but using the 'nginx' ingress class.
-
-#### SSL Termination
-
-For DataONE k8s, Let's Encrypt (LE) is used for Transport Layer Security encryption. The NIC provides SSL termination. The LE certificate is made available to the NIC by inserting it into a k8s secret. The secret is specified in an ingress that is read by the NIC, for example in `ingress-metadig.yaml`:
-
-```
-spec:
-  ingressClassName: nginx
-  tls:
-  - hosts:
-      - api.test.dataone.org
-    secretName: <secret-name>
-```
-
-The LE certificate and secret are maintained by DataONE admin scripts.
-Since the ingress resources exist in each service namespace, this secret can be repeated in each namespace, but it appears that the NIC only requires it to be in one namespace. This may be a result of the NIC appending together (in memory) all ingresses that it detects.
-
-#### NodePort
-
-The DataONE NIC is configured to use a k8s NodePort service, as described in [Bare-metal considerations](https://kubernetes.github.io/ingress-nginx/deploy/baremetal/#over-a-nodeport-service). 
-This configuration provides external access to DataONE services via a URL that specified the port that is made available via the NodePort service.
-
-
-#### Deploying The NGINX Ingress Controller
-
-The manifest files in the *nginx-ingress-controller* directory have been extracted from the deploy.yaml. The webhook capabilities of the NGINX ingress controller are not being used, so those manifests are not included, for example *controller-service-webhook.yaml* is not used.
-
-The following commands are used to configure resources and RBAC, and only need to be invoked once, or when upgrades or modifications are made:
-
-```
-kubectl create -f namespace.yaml
-kubectl create -f clusterrolebinding.yaml
-kubectl create -f clusterrole.yaml
-kubectl create -f controller-configmap.yaml
-kubectl create -f controller-rolebinding.yaml
-kubectl create -f controller-role.yaml
-kubectl create -f controller-serviceaccount.yaml
-kubectl create -f controller-ingressclass.yaml
-```
-
-These next commands start the NGINX Ingress Controller pod and service
-
-```
-kubectl create -f controller-deployment.yaml
-kubectl create -f controller-service.yaml
-```
-
-Next, an ingress resource is created for each service that the ingress controller will provide routing for:
-
-```
-kubectl create -f ingress-metadig.yaml
-```
-
-Note that `ingress-metadig.yaml` is part of the *MetaDIG* service, but is included here for illustration.

@@ -60,7 +60,7 @@ kubectl describe pv cephfs-static-pv
 The CephFS subvolume can be mounted by Linux, so that it can be accessed via the Linux command line. This may be useful in order to place files on the subvolume that will be used but not created by applications, such as configuration and data files. A sample command to mount a ceph subvolume:
 
 ```
-mount -t ceph 10.0.3.197:6789,10.0.3.207:6789,10.0.3.214:6789,10.0.3.222:6789,10.0.3.223:6789:/volumes/k8sdevsubvolgroup/k8sdevsubvol/4b7cd044-4055-49c5-97b4-d1240d276856 /mnt/k8sdevsubvol
+sudo mount -t ceph 10.0.3.197:6789,10.0.3.223:6789,10.0.3.207:6789,10.0.3.214:6789,10.0.3.222:6789:/volumes/k8sdevsubvolgroup/k8sdevsubvol/4b7cd044-4055-49c5-97b4-d1240d276856 /mnt/k8sdevsubvol -o name=k8sdevsubvoluser,secretfile=/etc/ceph/k8sdevsubvoluser.secret
 ```
 
 It is not necessary to mount the subvolume with this Linux command in order for Ceph-CSI to access it.
