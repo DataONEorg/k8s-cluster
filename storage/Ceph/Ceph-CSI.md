@@ -130,7 +130,7 @@ The plugin can be stopped and uninstalled with the command:
 helm uninstall "ceph-csi-rbd" --namespace "ceph-csi-rbd"
 ```
 
-An example of using RBD based storage with k8s is provided [here](./Ceph-CSI-rbd.md)
+An example of using RBD based storage with k8s is provided [here](./Ceph-CSI-RBD.md)
 
 ## Installing Ceph CSI CephFS Plugin
 
@@ -238,5 +238,5 @@ The plugin can be stopped and uninstalled with the command:
 helm uninstall "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
 ```
 
-An example of using CephFS based storage with k8s is provided [here](./Ceph-CSI-cephfs.md)
+An example of using CephFS based storage with k8s is provided [here](./Ceph-CSI-CephFS.md)
 
