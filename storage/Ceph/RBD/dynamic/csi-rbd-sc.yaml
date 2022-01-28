@@ -129,9 +129,5 @@ parameters:
    #       {"domainLabel":"zone","value":"zone1"}]}
    #   ]
 
-#reclaimPolicy: Delete
 reclaimPolicy: Retain
-#allowVolumeExpansion: true
-allowVolumeExpansion: false
-#mountOptions:
-#   - discard
+allowVolumeExpansion: true

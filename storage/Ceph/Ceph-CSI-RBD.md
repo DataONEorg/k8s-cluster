@@ -96,7 +96,7 @@ spec:
 
 For dynamically provisioned PVs, creating a PV manifest is not required. Instead a Storage Class (SC) description is created. 
 
-Here is an example RBD SC manifest:
+Here is an example RBD SC manifest `csi-rbd-sc.yaml`:
 
 ```
 ---
@@ -149,13 +149,18 @@ parameters:
    csi.storage.k8s.io/fstype: ext4
    
 reclaimPolicy: Retain
-allowVolumeExpansion: false
+allowVolumeExpansion: true
 
+```
+
+The storage class is created with the command:
+```
+kubectl create -f csi-rbd-sc.yaml
 ```
 
 ### Persistent Volume Claim
 
-Once the SC has been created, a PVC can be created:
+Once the SC has been created, a PVC can be created, for example `ceph-rbd-pvc.yaml`:
 
 
 ```
@@ -175,9 +180,16 @@ spec:
   storageClassName: csi-rbd-sc
 ```
 
+Create the PVC with the command:
+```
+kubectl create -f ceph-rbd-pvc.yaml
+```
+
+When the PVC is created, the PV will be created dynamically by ceph-csi, with the volume size specified in the PVC manifest.
+
 ### Using The Persistent Volume Claim
 
-After the SC and PVC have been created, pods can reference the PVC. When the pod is started, the Ceph-CSI driver is accessed and an RBD image is dynamically created for the pod. Here is an example pod that accesses the PVC:
+After the SC and PVC have been created, pods can reference the PVC. When the pod is started, the Ceph-CSI driver is accessed and an RBD image is dynamically created for the pod. Here is an example pod that accesses the PVC, `busybox.yaml`:
 
 ```
 apiVersion: apps/v1
@@ -208,3 +220,17 @@ spec:
             claimName: ceph-rbd-pvc
             readOnly: false
 ```
+
+The deployment is started with the command:
+
+```
+kubectl create -f busybox.yaml
+```
+
+The storage class shown previously was created with the option `allowVolumeExpansion: true`. This allows the PV to be dynamically resized by first editing the PVC manifest file and changing the requested storage. For example, changing `storage: 10Gi` to `storage: 20Gi` in the PVC example above. Once this is done, enter the command:
+
+```
+kubectl apply -f ceph-rbd-pvc.yaml
+```
+
+The volume can be expanded with this method while the deployment is running, i.e. it is not necessary to stop the deployment, resize the PV, then restart the deployment.
