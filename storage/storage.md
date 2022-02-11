@@ -48,5 +48,9 @@ The CSI storage driver for Ceph is available from the [Ceph CSI](https://github.
 
 Details of the DataONE k8s usage of Ceph via Ceph CSI is [here](./Ceph/Ceph-CSI.md)
 
+## Data Recovery
+
+For information regarding recovering data from Ceph based persistent volumes in the event of PV deletion or other problem, see Back to: [Data Recovery](./data-recovery.md)
+
 
 
