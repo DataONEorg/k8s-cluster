@@ -207,6 +207,17 @@ When mounting the RBD imaage make sure is not running and mounted on another hos
 
 In this example, the pod's data is now available at `/mnt/recovery-test` and can be copied to a backup directory or another Linux mounted PV using Linux commands.
 
+### Cleanup
+
+When the data has been recovered, the disk can be unmounted and the image unmapped if no longer needed:
+
+```
+umount /mnt/recovery-test
+rbd --id k8sdevrbd -p k8sdev-pool-ec42-metadata unmap csi-vol-7f858bfa-8083-11ec-89be-96b0610b4778
+rbd showmapped
+```
+
+The mapping for `csi-vol-7f858bfa-8083-11ec-89be-96b0610b4778` should not appear in the listing.
 
 ## Data Recovery For CephFS Based PVs
 
