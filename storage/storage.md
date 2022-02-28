@@ -50,7 +50,7 @@ Details of the DataONE k8s usage of Ceph via Ceph CSI is [here](./Ceph/Ceph-CSI.
 
 ## Data Recovery
 
-For information regarding recovering data from Ceph based persistent volumes in the event of PV deletion or other problem, see Back to: [Data Recovery](./data-recovery.md)
+For information regarding recovering data from Ceph based persistent volumes in the event of PV deletion or other problem, see [Data Recovery](./data-recovery.md)
 
 
 
