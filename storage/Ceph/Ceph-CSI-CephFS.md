@@ -34,10 +34,10 @@ spec:
       namespace: ceph-csi-cephfs
     volumeAttributes:
       # Required options from storageclass parameters need to be added in volumeAttributes
-      "clusterID": <clusterId>
+      "clusterID": "8aa4d4a0-a209-11ea-baf5-ffc787bfc812:
       "fsName": "cephfs"
       "staticVolume": "true"
-      "rootPath": /volumes/k8sdevsubvolgroup/k8sdevsubvol/4b7cd044-4055-49c5-97b4-d1240d276856
+      "rootPath": /volumes/k8ssubvolgroup/k8ssubvol/af348873-2be8-4a99-b1c1-ed2c80fe098b
     # volumeHandle can be anything, need not to be same
     # as PV name or volume name. keeping same for brevity
     volumeHandle: cephfs-static-pv
@@ -60,7 +60,8 @@ kubectl describe pv cephfs-static-pv
 The CephFS subvolume can be mounted by Linux, so that it can be accessed via the Linux command line. This may be useful in order to place files on the subvolume that will be used but not created by applications, such as configuration and data files. A sample command to mount a ceph subvolume:
 
 ```
-sudo mount -t ceph 10.0.3.197:6789,10.0.3.223:6789,10.0.3.207:6789,10.0.3.214:6789,10.0.3.222:6789:/volumes/k8sdevsubvolgroup/k8sdevsubvol/4b7cd044-4055-49c5-97b4-d1240d276856 /mnt/k8sdevsubvol -o name=k8sdevsubvoluser,secretfile=/etc/ceph/k8sdevsubvoluser.secret
+sudo mount -t ceph 10.0.3.197:6789,10.0.3.207:6789,10.0.3.214:6789,10.0.3.222:6789,10.0.3.223:6789:/volumes/k8ssubvolgroup/k8ssubvol/af348873-2be8-4a99-b1c1-ed2c80fe098b \
+   /mnt/k8ssubvol -o name=k8ssubvoluser,secretfile=/etc/ceph/k8ssubvoluser.secret
 ```
 
 It is not necessary to mount the subvolume with this Linux command in order for Ceph-CSI to access it.
@@ -74,8 +75,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: cephfs-static-pvc
-  #namespace: ceph-csi-cephfs
-  namespace: default
+  namespace: ceph-csi-cephfs
 spec:
   accessModes:
   - ReadWriteMany
@@ -108,7 +108,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: busybox
-  namespace: default
+  namespace: ceph-csi-cephfs
 spec:
   selector:
     matchLabels:

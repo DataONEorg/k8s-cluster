@@ -24,7 +24,7 @@ helm install "ceph-csi-cephfs" ceph-csi/ceph-csi-cephfs \
   --set nodeplugin.registrar.image.tag="v2.2.0" \
   --set nodeplugin.plugin.image.tag="v3.4.0" \
   --set secret.create=false \
-  --set secret.name=ceph-csi-cephfs/csi-cephfs-secret \
+  --set secret.name=csi-cephfs-secret \
   --set storageClass.create=false 
 
 

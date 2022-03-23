@@ -16,11 +16,10 @@ spec:
       namespace: ceph-csi-cephfs
     volumeAttributes:
       # Required options from storageclass parameters need to be added in volumeAttributes
-      "clusterID": "< cluster id>"
-      #"fsName": "k8sdev"
+      "clusterID": "8aa4d4a0-a209-11ea-baf5-ffc787bfc812"
       "fsName": "cephfs"
       "staticVolume": "true"
-      "rootPath": /volumes/k8sdevsubvolgroup/k8sdevsubvol/4b7cd044-4055-49c5-97b4-d1240d276856
+      "rootPath": /volumes/k8ssubvolgroup/k8ssubvol/af348873-2be8-4a99-b1c1-ed2c80fe098b
     # volumeHandle can be anything, need not to be same
     # as PV name or volume name. keeping same for brevity
     volumeHandle: cephfs-static-pv

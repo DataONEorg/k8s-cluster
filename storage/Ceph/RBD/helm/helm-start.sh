@@ -19,12 +19,12 @@ helm install "ceph-csi-rbd" ceph-csi/ceph-csi-rbd \
   --set serviceAccounts.provisioner.create=true \
   --set configMapName=ceph-csi-config \
   --set externallyManagedConfigmap=true \
-  --set nodeplugin.name=csi-cephfsplugin \
+  --set nodeplugin.name=csi-cephrbdplugin \
   --set logLevel=5 \
   --set nodeplugin.registrar.image.tag="v2.2.0" \
   --set nodeplugin.plugin.image.tag="v3.4.0" \
   --set secret.create=false \
-  --set secret.name=ceph-csi-rbd/csi-cephfs-secret \
+  --set secret.name=csi-cephrbd-secret \
   --set storageClass.create=false
 
 helm status "ceph-csi-rbd" -n ceph-csi-rbd

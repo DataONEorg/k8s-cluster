@@ -20,13 +20,13 @@ spec:
     volumeAttributes:
       # Required options from storageclass parameters need to be added in volumeAttributes
       "clusterID": <cluster Id>
-      "pool": "k8sdev-pool-ec42-metadata"
+      "pool": "k8s-pool-ec42-metadata"
       "staticVolume": "true"
       "imageFeatures": "layering"
       #mounter: rbd-nbd
     # volumeHandle should be same as rbd image name
     #volumeHandle: static-image
-    volumeHandle: k8sdevtest
+    volumeHandle: k8stest
   persistentVolumeReclaimPolicy: Retain
   # The volumeMode can be either `Filesystem` or `Block` if you are creating Filesystem PVC it should be `Filesystem`, if you are creating Block PV you need to change it to `Block`
   volumeMode: Filesystem

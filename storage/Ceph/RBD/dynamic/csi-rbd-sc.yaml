@@ -23,11 +23,11 @@ parameters:
    # You need to specify the replicated pool here in the `pool` parameter, it is
    # used for the metadata of the images.
    # The erasure coded pool must be set as the `dataPool` parameter below.
-   dataPool: k8sdev-pool-ec42-data
+   dataPool: k8s-pool-ec42-data
 
    # (required) Ceph pool into which the RBD image shall be created
    # eg: pool: rbdpool
-   pool: k8sdev-pool-ec42-metadata
+   pool: k8s-pool-ec42-metadata
 
    # Deprecated: Set thickProvision to true if you want RBD images to be fully
    # allocated on creation (thin provisioning is the default).
@@ -66,11 +66,11 @@ parameters:
    # The secrets have to contain Ceph credentials with required access
    # to the 'pool'.
    csi.storage.k8s.io/provisioner-secret-name: csi-rbd-secret
-   csi.storage.k8s.io/provisioner-secret-namespace: default
+   csi.storage.k8s.io/provisioner-secret-namespace: ceph-csi-rbd
    csi.storage.k8s.io/controller-expand-secret-name: csi-rbd-secret
-   csi.storage.k8s.io/controller-expand-secret-namespace: default
+   csi.storage.k8s.io/controller-expand-secret-namespace: ceph-csi-rbd
    csi.storage.k8s.io/node-stage-secret-name: csi-rbd-secret
-   csi.storage.k8s.io/node-stage-secret-namespace: default
+   csi.storage.k8s.io/node-stage-secret-namespace: ceph-csi-rbd
 
    # (optional) Specify the filesystem type of the volume. If not specified,
    # csi-provisioner will set default as `ext4`.

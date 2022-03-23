@@ -66,10 +66,10 @@ metadata:
 The Ceph cluster id and monitor addresses can be obtained with the command:
 
 ```
-sudo ceph -n client.k8sdev --keyring=/etc/ceph/ceph.client.k8sdev.keyring mon dump
+sudo ceph -n client.k8s --keyring=/etc/ceph/ceph.client.k8s.keyring mon dump
 ```
 
-This example shows the required command for the DataONE k8s development cluster only. Appropriate values must be substituted for the production cluster when installing there.
+This example shows the required command for the DataONE k8s production only. Appropriate values must be substituted for the development cluster when installing there.
 
 The `secret.yaml` file contains the ceph storage cluster login credentials needed for ceph-csi to mount Ceph RBD images that are statically provisioned, or to create RBD images for dynamically provisioned voluems. For statically provisioned PVs, RBD images are created manually with the Linux `ceph` utility.
 
@@ -81,16 +81,18 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: csi-rbd-secret
-  namespace: default
+  namespace: ceph-csi-rbd
 stringData:
   # Required for statically provisioned volumes
-  userID: k8sdevrbd
-  userKey: <user key from /etc/helm>
+  userID: k8srbd
+  userKey: <user key from /etc/ceph>
 
   # Required for dynamically provisioned volumes
   #adminID: <plaintext ID>
   #adminKey: <Ceph auth key corresponding to ID above>
 ```
+
+Note that the name and namespace of this secret has to match the name and namespace specified in the helm installation command and in the annotations of the storage class used to provision volumes.
 
 To install the RBD plugin:
 
@@ -103,7 +105,7 @@ kubectl create -f csi-config-map.yaml
 helm install "ceph-csi-rbd" ceph-csi/ceph-csi-rbd \
   --version 3.4.0 \
   --namespace "ceph-csi-rbd" \
-  --set configMapName=ceph-csi-rbd\
+  --set configMapName=ceph-csi-rbd \
   --set rbac.create=true \
   --set serviceAccounts.nodeplugin.create=true \
   --set serviceAccounts.provisioner.create=true \
@@ -114,7 +116,7 @@ helm install "ceph-csi-rbd" ceph-csi/ceph-csi-rbd \
   --set nodeplugin.registrar.image.tag="v2.2.0" \
   --set nodeplugin.plugin.image.tag="v3.4.0" \
   --set secret.create=false \
-  --set secret.name=ceph-csi-rbd/csi-cephfs-secret \
+  --set secret.name=csi-cephrbd-secret \
   --set storageClass.create=false
 ```
 
@@ -149,10 +151,10 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: csi-cephfs-secret
-  namespace: default
+  namespace: ceph-csi-cephfs
 stringData:
   # Required for statically provisioned volumes
-  userID: k8sdevsubvoluser
+  userID: k8ssubvoluser
   userKey: <Ceph auth key corresponding to ID above from /etc/ceph>
 ```
 
@@ -199,7 +201,7 @@ data:
     ]
 metadata:
   name: ceph-csi-config
-  namespace: ceph-csi-rbd
+  namespace: ceph-csi-cephfs
 ```
 
 To install the CephFS plugin:
@@ -222,7 +224,7 @@ helm install "ceph-csi-cephfs" ceph-csi/ceph-csi-cephfs \
   --set nodeplugin.registrar.image.tag="v2.2.0" \
   --set nodeplugin.plugin.image.tag="v3.4.0" \
   --set secret.create=false \
-  --set secret.name=ceph-csi-cephfs/csi-cephfs-secret \
+  --set secret.name=csi-cephfs-secret \
   --set storageClass.create=false
 ```
 
