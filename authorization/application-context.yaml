@@ -16,7 +16,7 @@ metadata:
   name: slinky
   namespace: slinky
 rules:
-- apiGroups: ["", "extensions", "apps"]
+- apiGroups: ["", "networking.k8s.io", "extensions", "apps"]
   resources: ["*"]
   verbs: ["*"]
 - apiGroups: ["batch"]
