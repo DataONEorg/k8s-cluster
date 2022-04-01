@@ -40,18 +40,20 @@ For example, to create the the 'slinky' context, the admin user is used to invok
 
 This script will add the new context to the ~/.kube/config file.
 
-## Grant Privileges To The serviceAccount
+## Grant Additional Privileges To The serviceAccount
 
-A serviceAccount is initially created without any privileges granted. 
+A serviceAccount is initially created with a default set of privileges granted as configured in the
+template application-access.yaml file. 
 
 A k8s role and rolebinding are created to grant access to the serviceAccount to perform any
 actions on the namespace created for the application. No actions on any other resource outside
-the designated namespace are granted. First edit the manifest file 'application-access.yaml',
-changing the *name:* and *namespace:* properties to the desired value (e.g. 'slinky), then grant the privileges
-using the k8s admin context:
+the designated namespace are granted. To add additional privileges, edit the manifest file 'application-access.yaml',
+changing the namespace, account, API Groups and other values, then grant the privileges using the k8s admin context:
 ::
 
     kubectl create -f application-access.yaml
+
+Note that the defaults will be applied in the initial creation of the serviceaccount, so this step will usually not be needed.
 
 ## References
 - https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/

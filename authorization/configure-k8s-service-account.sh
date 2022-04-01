@@ -1,13 +1,11 @@
 #!/bin/bash
 
 # This script creates the authorization needed to run an app on the DataONE k8s cluster.
-# A k8s namespace, service account and kubectl context are created.
+# A k8s namespace, service account and kubectl context are createdi, and a default set of RBAC rules are applied.
 set -e
 set -o pipefail
 
 # The namespace and serviceaccount will have the same name as the application.
-# No RBAC is created by this script. The RBAC needs to be created and applied
-# after this script is run.
 if [[ -z "$1" ]] ; then
  echo "usage: $0 application-name"
  exit 1
@@ -104,6 +102,10 @@ flatten_config() {
     mv ${CONFIG}-flattened-${NAMESPACE} ${CONFIG}
 }
 
+apply_rbac() {
+    cat application-context.yaml | SERVICE_ACCOUNT=${SERVICE_ACCOUNT_NAME} envsubst | kubectl apply -f -
+}
+
 echo "Starting on ${TODAY}..."
 create_target_folder
 create_namespace
@@ -113,10 +115,9 @@ extract_ca_crt_from_secret
 get_user_token_from_secret
 set_kube_config_values
 flatten_config
+apply_rbac
 
 echo -e "\\nAll done! Test with:"
 echo "KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get pods"
-echo "you should not have any permissions by default - you have just created the authentication part"
-echo "You will need to create RBAC permissions"
 KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get pods
 
