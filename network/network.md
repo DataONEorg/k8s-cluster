@@ -6,7 +6,7 @@ Networking for the Kubernetes cluster is set up on the local UCSB physical netwo
 
 ## Physical network
 
-Describe host-networking...
+Virtual machine based hosts have two network devices, one for the public UCSB subnet (128.111.85.0/24), and the other for the private Ceph subnet (10.0.3.0/24).
 
 ## Kubernetes Overlay network with Calico
 
