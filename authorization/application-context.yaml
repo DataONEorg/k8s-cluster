@@ -16,7 +16,7 @@ metadata:
   name: ${SERVICE_ACCOUNT}
   namespace: ${SERVICE_ACCOUNT}
 rules:
-- apiGroups: ["", "networking.k8s.io", "extensions", "apps"]
+- apiGroups: ["", "networking.k8s.io", "extensions", "apps","autoscaling"]
   resources: ["*"]
   verbs: ["*"]
 - apiGroups: ["batch"]
