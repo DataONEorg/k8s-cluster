@@ -4,12 +4,66 @@ Documentation on the DataONE Kubernetes cluster. This repository contains operat
 
 Documentation is organized into an overview, and then separate config files and documentation for each of the main configured services provided by he cluster. Documentation of the specific services operated on the cluster (e.g., metadig, dataone-api, etc.) is in their respective repositories.
 
-## Cluster documentation
+## [Cluster Overview](./cluster-overview.md)
+- [Overview of the DataONE Kubernetes Cluster](./cluster-overview.md#Overview-of-the-DataONE-Kubernetes-Cluster)
+- [High Availability and Fault Tolerance](./cluster-overview.md#High-Availability-and-Fault-Tolerance)
 
-- [Cluster Overview](cluster-overview.md)
-    - [Network](network/network.md)
-    - [Ceph Storage](storage/storage.md)
-    - [Control Plane](control-plane/control-plane.md)
+## [Managing Let's Encrypt Certificates With cert-manager](/authentication/LetsEncrypt.md)
+- [Installing cert-manager](./authentication/LetsEncrypt.md#Installing-cert-manager)
+- [Configuring cert-manager](./authentication/LetsEncrypt.md#Configuring-cert-manager)
+- [Configure and Deploy Ingress resource](./authentication/LetsEncrypt.md#Configure-and-Deploy-Ingress-resource)
 
+## [Application Authorization](./authorization)
+- [Create The kubectl Configuration File](./authorization/#Create-The-kubectl-Configuration-File)
+- [Grant Additional Privileges To The serviceAccount](./authorization/#Grant-Additional-Privileges-To-The-serviceAccount)
+- [References](./authorization/References)
+
+## [Control Plane Configuration](./control-plane/control-plane.md)
+- [Control plane high availability](./control-plane/control-plane.md#Control-plane-high-availability)
+- [Control Plane Configuration](./control-plane/control-plane.md#Control-Plane-Configuration)
+- [Load Balancer](./control-plane/control-plane.md#Load-Balancer)
+- [etcd service](./control-plane/control-plane.md#etcd-service)
+- [Ingress Controller](./control-plane/control-plane.md#Ingress-Controller)
+  - [Installation](./control-plane/control-plane.md#Installation)
+  - [Configuration](./control-plane/control-plane.md#Configuration)
+    - [Ingress Class](./control-plane/control-plane.md#Ingress-Class)
+    - [Ingress](./control-plane/control-plane.md##Ingress)
+
+## [Networking Configuration](./network/network.md)
+- [Physical network](./network/network.md#Physical-network)
+- [Kubernetes Overlay network with Calico](./network/network.md#Kubernetes-Overlay-network-with-Calico)
+
+## [Storage Provisioning](./storage/storage.md)
+- [Persistent Disk Storage For Applications](./storage/storage.md#Persistent-Disk-Storage-For-Applications)
+  - [Persistent Volumes](./storage/storage.md#Persistent-Volumes)
+  - [Persistent Volume Claim](./storage/storage.md#Persistent-Volume-Claim)
+  - [Statically Provisioned Persistent Volumes](./storage/storage.md#Statically-Provisioned-Persistent-Volumes)
+  - [Dynamically Provisioned Persistent Volumes](./storage/storage.md#Dynamically-Provisioned-Persistent-Volumes)
+- [Ceph-based Volumes](./storage/storage.md#Ceph-based-Volumes)
+- [Data Recovery](./storage/storage.md#Data-Recovery)
+
+### [Ceph CSI](./storage/Ceph/Ceph-CSI.md#)
+- [Installing Ceph CSI RBD Plugin](./storage/Ceph/Ceph-CSI.md#Installing-Ceph-CSI-RBD-Plugin)
+- [Installing Ceph CSI CephFS Plugin](./storage/Ceph/Ceph-CSI.md#Installing-Ceph-CSI-CephFS-Plugin)
+
+#### [Ceph CSI CephFS](./storage/Ceph/Ceph-CSI-CephFS.md)
+- [Provisioning Static CephFS Volumes](./storage/Ceph/Ceph-CSI-CephFS.md#Provisioning-Static-CephFS-Volumes)
+- [Persistent Volume Claim](./storage/Ceph/Ceph-CSI-CephFS.md#Persistent-Volume-Claim)
+- [Using The PVC](./storage/Ceph/Ceph-CSI-CephFS.md#Using-The-PVC)
+- [Troubleshooting](./storage/Ceph/Ceph-CSI-CephFS.md#Troubleshooting)
+
+#### [Ceph CSI RBD](./storage/Ceph/Ceph-CSI-RBD.md)
+- [Provisioning Static Volumes with Ceph CSI RBD](./storage/Ceph/Ceph-CSI-RBD.md#Provisioning-Static-Volumes-with-Ceph-CSI-RBD)
+  - [Persistent Volume](./storage/Ceph/Ceph-CSI-RBD.md#Persistent-Volume)
+  - [List all pools](./storage/Ceph/Ceph-CSI-RBD.md#List-all-pools)
+  - [Persistent Volume Claim](./storage/Ceph/Ceph-CSI-RBD.md#Persistent-Volume-Claim)
+- [Provisioning Dynamic Volumes with Ceph CSI RBD](./storage/Ceph/Ceph-CSI-RBD.md#Provisioning-Dynamic-Volumes-with-Ceph-CSI-RBD)
+  - [Storage Class](./storage/Ceph/Ceph-CSI-RBD.md#Storage-Class)
+  - [Persistent Volume Claim](./storage/Ceph/Ceph-CSI-RBD.md#Persistent-Volume-Claim)
+  - [Using The Persistent Volume Claim](./storage/Ceph/Ceph-CSI-RBD.md#Using-The-Persistent-Volume-Claim)
+
+## [Data Recovery](./storage/data-recovery.md#Data-Recovery)
+- [Data Recovery For RBD Based PVs](./storage/data-recovery.md#Data-Recovery-For-RBD-Based-PVs)
+- [Data Recovery For CephFS Based PVs](./storage/data-recovery.md#Data-Recovery-For-CephFS-Based-PVs)
 
 [![dataone_footer](https://www.dataone.org/sites/all/images/DataONE_LOGO.jpg)](https://www.dataone.org)
