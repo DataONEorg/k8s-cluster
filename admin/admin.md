@@ -40,9 +40,9 @@ Add the node back:
 kubectl uncordon docker-ucsb-5
 ```
 
-# Repeat for all nodes
-
 #### Controllers
+
+
 
 
 ## Add/Removing Hosts
