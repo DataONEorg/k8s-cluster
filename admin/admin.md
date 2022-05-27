@@ -41,8 +41,7 @@ kubectl uncordon docker-ucsb-5
 ```
 
 #### Controllers
-
-
+No steps are necessary before rebooting the controller (currently k8s-ctrl-1).
 
 
 ## Add/Removing Hosts
