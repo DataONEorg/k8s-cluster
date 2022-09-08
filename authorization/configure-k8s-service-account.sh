@@ -6,16 +6,24 @@ set -e
 set -o pipefail
 
 # The namespace and serviceaccount will have the same name as the application.
+# Config files will prefix these with cluster-type (dev or prod)
 if [[ -z "$1" ]] ; then
- echo "usage: $0 application-name"
+ echo "usage: $0 application-name cluster-type"
  exit 1
 fi
 
+if [[ -z "$2" ]] ; then
+ CLUSTER_TYPE="dev"
+else
+ CLUSTER_TYPE=$2
+fi
+
+echo "Using CLUSTER_TYPE: ${CLUSTER_TYPE}"
 SERVICE_ACCOUNT_NAME=$1
 NAMESPACE="$1"
 TARGET_FOLDER="${HOME}/.kube"
-CONFIG="${TARGET_FOLDER}/config"
-KUBECFG_FILE_NAME="${TARGET_FOLDER}/${SERVICE_ACCOUNT_NAME}.config"
+CONFIG="${TARGET_FOLDER}/config-${CLUSTER_TYPE}"
+KUBECFG_FILE_NAME="${TARGET_FOLDER}/${SERVICE_ACCOUNT_NAME}-${CLUSTER_TYPE}.config"
 TODAY=$(date +'%Y-%m-%d-%H%M%S')
 
 create_target_folder() {
@@ -31,12 +39,17 @@ create_namespace() {
 
 create_service_account() {
     echo -e "\\nCreating a service account in ${NAMESPACE} namespace: ${SERVICE_ACCOUNT_NAME}"
-    kubectl create sa "${SERVICE_ACCOUNT_NAME}" --namespace "${NAMESPACE}"
+    kubectl create sa "${SERVICE_ACCOUNT_NAME}" --namespace "${NAMESPACE}" --save-config
+    # Create a secret to be used to identify the SA
+    # As of k8s 1.22 a token is not automatically attached to a SA, so needs to be manually created
+    # See: https://kubernetes.io/docs/concepts/configuration/secret/#service-account-token-secrets
+    cat sa-token.yaml | SERVICE_ACCOUNT=${SERVICE_ACCOUNT_NAME} envsubst | kubectl apply -f -
 }
 
 get_secret_name_from_service_account() {
     echo -e "\\nGetting secret of service account ${SERVICE_ACCOUNT_NAME} on ${NAMESPACE}"
-    SECRET_NAME=$(kubectl get sa "${SERVICE_ACCOUNT_NAME}" --namespace="${NAMESPACE}" -o json | jq -r .secrets[].name)
+    #SECRET_NAME=$(kubectl get sa "${SERVICE_ACCOUNT_NAME}" --namespace="${NAMESPACE}" -o json | jq -r .secrets[].name)
+    SECRET_NAME="${SERVICE_ACCOUNT_NAME}-secret"
     echo "Secret name: ${SECRET_NAME}"
 }
 
@@ -65,7 +78,7 @@ set_kube_config_values() {
     echo "Endpoint: ${ENDPOINT}"
 
     # Set up the config
-    echo -e "\\nPreparing k8s-${SERVICE_ACCOUNT_NAME}-conf"
+    echo -e "\\nPreparing ${KUBECFG_FILE_NAME}"
     echo -n "Setting a cluster entry in kubeconfig..."
     kubectl config set-cluster "${CLUSTER_NAME}" \
     --kubeconfig="${KUBECFG_FILE_NAME}" \
@@ -75,21 +88,21 @@ set_kube_config_values() {
 
     echo -n "Setting token credentials entry in kubeconfig..."
     kubectl config set-credentials \
-    "${SERVICE_ACCOUNT_NAME}" \
+    "${CLUSTER_TYPE}-${SERVICE_ACCOUNT_NAME}" \
     --kubeconfig="${KUBECFG_FILE_NAME}" \
     --token="${USER_TOKEN}" \
     --cluster="${CLUSTER_NAME}"
 
     echo -n "Setting a context entry in kubeconfig..."
     kubectl config set-context \
-    "${SERVICE_ACCOUNT_NAME}" \
+    "${CLUSTER_TYPE}-${SERVICE_ACCOUNT_NAME}" \
     --kubeconfig="${KUBECFG_FILE_NAME}" \
     --cluster="${CLUSTER_NAME}" \
-    --user="${SERVICE_ACCOUNT_NAME}" \
+    --user="${CLUSTER_TYPE}-${SERVICE_ACCOUNT_NAME}" \
     --namespace="${NAMESPACE}"
 
     echo -n "Setting the current-context in the kubeconfig file..."
-    kubectl config use-context "${SERVICE_ACCOUNT_NAME}" \
+    kubectl config use-context "${CLUSTER_TYPE}-${SERVICE_ACCOUNT_NAME}" \
     --kubeconfig="${KUBECFG_FILE_NAME}" \
     --cluster="${CLUSTER_NAME}"
 }

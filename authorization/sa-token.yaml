@@ -1,0 +1,12 @@
+---
+# Secret used for authorization of the SA ${SERVICE_ACCOUNT}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${SERVICE_ACCOUNT}-secret
+  namespace: ${SERVICE_ACCOUNT}
+  annotations:
+    kubernetes.io/service-account.name: ${SERVICE_ACCOUNT}
+type: kubernetes.io/service-account-token
+data:
+  extra: ZGVidWcK
