@@ -44,6 +44,55 @@ kubectl uncordon docker-ucsb-5
 No steps are necessary before rebooting the controller (currently k8s-ctrl-1).
 
 
-## Add/Removing Hosts
+## Adding a node
 
-## Upgrading K8s
+- Create a new VM using the [NCEAS Server Setup Docs]( https://github.nceas.ucsb.edu/NCEAS/Computing/blob/master/server_setup.md)
+- Install K8s dependencies:
+```
+k8s-node-new$ sudo apt update
+k8s-node-new$ sudo apt install apt-transport-https ca-certificates curl software-properties-common docker.io
+```
+
+- Install the K8s deb repo from https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/ :
+```
+k8s-node-new$ echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+```
+
+- Installed the same version of k8s as on the controller, for example:
+```
+k8s-node-new$ sudo apt install kubeadm=1.23.4-00
+k8s-node-new$ sudo apt install kubectlm=1.23.4-00
+k8s-node-new$ sudo apt install kubectl=1.23.4-00
+k8s-node-new$ sudo apt install kubelet=1.23.4-00
+k8s-node-new$ sudo apt-mark hold kubeadm kubelet kubectl
+```
+
+- Disable any swap files or partitions
+```
+k8s-node-new$ sudo swapoff -a
+k8s-node-new$ sudo vim /etc/fstab
+```
+
+- Print the join command from the controller:
+```
+k8s-ctrl$ kubeadm token create --print-join-command
+```
+
+- Paste and run the join command on the new node:
+```
+k8s-node-new$ kubeadm join ...
+```
+
+- Verify that the new node has joined successfully from the controller:
+```
+k8s-ctrl$ kubeadm get nodes
+```
+
+- Remove the new node if something went wrong
+```
+k8s-ctrl$ kubeadm drain k8s-node-new
+k8s-ctrl$ kubeadm cordon k8s-node-new
+```
+
+
+
