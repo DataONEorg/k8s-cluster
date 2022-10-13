@@ -63,10 +63,7 @@ echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https:/
 
 - Installed the same version of k8s as on the controller, for example:
 ```
-sudo apt install kubeadm=1.23.4-00
-sudo apt install kubectlm=1.23.4-00
-sudo apt install kubectl=1.23.4-00
-sudo apt install kubelet=1.23.4-00
+sudo apt install kubeadm=1.23.4-00 kubectl=1.23.4-00 kubelet=1.23.4-00
 sudo apt-mark hold kubeadm kubelet kubectl
 ```
 
