@@ -49,10 +49,11 @@ No steps are necessary before rebooting the controller (currently k8s-ctrl-1).
 All commands are run on the new K8s node unless specified.
 
 - Create a new VM using the [NCEAS Server Setup Docs]( https://github.nceas.ucsb.edu/NCEAS/Computing/blob/master/server_setup.md)
-- Install K8s dependencies:
+
+- Disable any swap files or partitions
 ```
-sudo apt update
-sudo apt install apt-transport-https ca-certificates curl software-properties-common docker.io
+sudo swapoff -a
+sudo vim /etc/fstab
 ```
 
 - Install the K8s deb repo from https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/ :
@@ -61,21 +62,16 @@ sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://pack
 echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 ```
 
-- Installed the same version of k8s as on the controller, for example:
+- Install K8s (the same version as on the controllers) and dependencies:
 ```
-sudo apt install kubeadm=1.23.4-00 kubectl=1.23.4-00 kubelet=1.23.4-00
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common docker.io kubeadm=1.23.4-00 kubectl=1.23.4-00 kubelet=1.23.4-00
 sudo apt-mark hold kubeadm kubelet kubectl
-```
-
-- Disable any swap files or partitions
-```
-sudo swapoff -a
-sudo vim /etc/fstab
 ```
 
 - Print the join command from the controller:
 ```
-k8s-ctrl$ kubeadm token create --print-join-command
+k8s-ctrl$ sudo kubeadm token create --print-join-command
 ```
 
 - Paste and run the join command on the new node:
@@ -85,12 +81,13 @@ kubeadm join ...
 
 - Verify that the new node has joined successfully from the controller:
 ```
-k8s-ctrl$ kubeadm get nodes
+k8s-ctrl$ kubectl get nodes -o wide
+k8s-ctrl$ kubectl get pods -o wide
 ```
 
 - Remove the new node if something went wrong
 ```
-k8s-ctrl$ kubeadm drain k8s-node-new
+k8s-ctrl$ kubeadm drain k8s-node-new --ignore-daemonsets --delete-emptydir-data --force
 k8s-ctrl$ kubeadm cordon k8s-node-new
 ```
 
