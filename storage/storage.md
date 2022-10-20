@@ -40,18 +40,6 @@ An example of dynamic provisioning is described in [Ceph-CSI RBD](./Ceph/Ceph-CS
 
 ## DataONE Volume Naming Conventions
 
-NAMESPACE   NAME                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-gnis        cephfs-gnis-pvc           Bound    cephfs-gnis-pv                             100Gi      RWX                           349d
-metadig     ceph-rbd-pvc              Bound    pvc-8b1dfcf4-12c2-4285-b145-d7bafb96c75b   1Gi        RWO            csi-rbd-sc     210d
-metadig     cephfs-metadig-pvc        Bound    cephfs-metadig-pv                          600Gi      RWX                           289d
-metadig     data-metadig-rabbitmq-0   Bound    pvc-886cafa4-f787-4f2f-a02e-99a5bc623436   10Gi       RWO            csi-rbd-sc     157d
-metadig     data-metadig-rabbitmq-1   Bound    pvc-c778ac25-957f-46aa-8bdb-bd8f7b4c14b7   10Gi       RWO            csi-rbd-sc     157d
-metadig     data-metadig-rabbitmq-2   Bound    pvc-17957c18-36eb-435c-a18c-d0be982d3429   10Gi       RWO            csi-rbd-sc     157d
-metadig     data-metadig-solr-0       Bound    pvc-1d67d889-8636-4285-9f33-12132ef64e07   20Gi       RWO            csi-rbd-sc     157d
-polder      polder-pvc-01             Bound    pvc-6ee2a052-af45-4cc2-970b-88139fa754b8   50Gi       RWO            csi-rbd-sc     210d
-polder      polder-pvc-02             Bound    pvc-c83f684f-ad03-4be6-b5f6-945e4639135f   50Gi       RWO            csi-rbd-sc     210d
-slinky      cephfs-slinky-pvc         Bound    cephfs-slinky-pv                           50Gi       RWX                           321d
-
 PVCs represent the persistent storage for apps, and PVs represent the backing storage location. A standard naming convention helps us to understand which PVCs are used by which applications, allows for repeated deployment of the same application, and makes it clear how volumes map to the underlying storage systems (e.g., Ceph RDB or CephFS, using static or dynamic provisioning). Our convention is to use the following naming structure:
 
 **Naming PVCs.** For the case of PVCs, the objective is to allow us to deploy, for example, the same application through multiple helm releases while having predicatable, informative, uniquely named PVCs and no naming conflicts. In the name template below, the {release} shoud be the name of the deployed helm release, which generally should match the namespace for that deployment. In the case of a non-helm app deployment, this first component will likely be the namespace of the deployment assuming each namespace only has one app deployed in it. The second component {function} of the name is the main function within that deployment that will make use of the PVC, such as solr, metacat, or postgres. This will also often be the name of a container in the deployment, but sometimes a container will need multiple PVCs for different functions, so a short name should be chose to differentiate the purposes. The final component is a number to match the PVC to a particular instance of a StatefulSet (e.g., for the solr-0, solr-1, and solr-2 pods in a solr cluster). This last {instance} part of the name is optional if it is not needed, or can be set to `-0` as a default case. For applications that will only be deployed once and for which the main application container has the same name and only needs a single PVC, all of this will boil down to a simple name like `gnis-gnis` or `slinky-slinky`. More complex deployments will use the full 3 part naming convention.
