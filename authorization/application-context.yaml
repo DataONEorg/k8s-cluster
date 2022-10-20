@@ -17,6 +17,7 @@ metadata:
   namespace: ${SERVICE_ACCOUNT}
 rules:
 - apiGroups: ["", "networking.k8s.io", "extensions", "apps","autoscaling"]
+  #apiGroups: ["", "networking.k8s.io", "extensions", "apps","autoscaling", "rbac.authorization.k8s.io"]
   resources: ["*"]
   verbs: ["*"]
 - apiGroups: ["batch"]
