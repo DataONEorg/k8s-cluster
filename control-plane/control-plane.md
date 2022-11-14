@@ -126,3 +126,60 @@ These ingress resources are created in the same namespace as the services that t
 Note that the NIC will continue to scan for ingress objects that match the ingress class `nginx` and will setup routing when ingress resources are added. 
 
 A separate ingress resource is defined for each DataONE service, for example the `gnis` service in the `gnis` namespace, with a separate ingress resource, but using the 'nginx' ingress class.
+
+#### Exposing TCP Services
+Ingress does not support TCP services. For this reason the Ingress controller uses the flag `--tcp-services-configmap` to point to an existing config map which indicates the services. Here are the details:
+<ol>
+  <li>Upload a config map:</li>
+  
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx
+data:
+  5672: "d1index/d1index-rabbitmq:5672"
+  8983: "d1index/d1index-solr:8983"
+```
+This example shows how to expose the service `d1index-rabbitmq` running in the namespace `d1index` in the port `5672` using the port `5672`; another service `d1index-solr` in the namespace `d1index` in the port `8983` using the port `8983`. You may use the command of `kubectl apply` to upload the config map.
+
+  <li>Pass the configure map configuration to the controller by editing the deployment of the ingress-nginx-controller:</li>
+  
+```
+kubectl edit deployments -n ingress-nginx ingress-nginx-controller
+```
+Add the line under spec.template.spec.containers.args and save it:
+  
+```
+- --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
+```
+The modification of the deployment will automatically trigger the reloading of the ingress-nginx-controller pods.
+
+  <li>Add the new node ports:</li>
+In the file `controller-service-additional-ports.yaml` mentioned in the above section, add thoses lines:
+  
+```
+- name: rabbitmq-tcp
+  port: 5672
+  protocol: TCP
+  targetPort: 5672
+- name: solr-https
+  port: 8983
+  protocol: TCP
+  targetPort: 8983
+  appProtocol: https
+```
+Then apply the file by this command:
+  
+```
+kubectl apply -f controller-service-additional-ports.yaml
+```
+Check that those ports are available:
+  
+```
+kubectl get service ingress-nginx-controller -n ingress-nginx
+NAME                       TYPE       CLUSTER-IP     EXTERNAL-IP      PORT(S)                                                                                    AGE
+  ingress-nginx-controller   NodePort   10.106.98.34   128.111.85.190     80:32403/TCP,443:30214/TCP,30080:30343/TCP,30443:32163/TCP,5672:31122/TCP,8983:32480/TCP   278d
+```
+</ol>
