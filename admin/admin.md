@@ -82,7 +82,7 @@ kubeadm join ...
 - Verify that the new node has joined successfully from the controller:
 ```
 k8s-ctrl$ kubectl get nodes -o wide
-k8s-ctrl$ kubectl get pods -o wide
+k8s-ctrl$ kubectl get pods -A -o wide
 ```
 
 - Remove the new node if something went wrong
