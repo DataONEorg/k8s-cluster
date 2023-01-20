@@ -11,6 +11,7 @@ Documentation is organized into an overview, and then separate config files and 
 ## [Cluster Administration](./admin/admin.md)
 - [Rebooting](./admin/admin.md#Rebooting)
 - [Adding a Node](./admin/admin.md#Adding-a-node)
+- [Assigning Pods to Nodes](./admin/admin.md#Assigning-Pods-to-Nodes)
 
 ## [Managing Let's Encrypt Certificates With cert-manager](/authentication/LetsEncrypt.md)
 - [Installing cert-manager](./authentication/LetsEncrypt.md#Installing-cert-manager)
