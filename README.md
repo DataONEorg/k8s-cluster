@@ -8,6 +8,10 @@ Documentation is organized into an overview, and then separate config files and 
 - [Overview of the DataONE Kubernetes Cluster](./cluster-overview.md#Overview-of-the-DataONE-Kubernetes-Cluster)
 - [High Availability and Fault Tolerance](./cluster-overview.md#High-Availability-and-Fault-Tolerance)
 
+## [Cluster Administration](./admin/admin.md)
+- [Rebooting](./admin/admin.md#Rebooting)
+- [Adding a Node](./admin/admin.md#Adding-a-node)
+
 ## [Managing Let's Encrypt Certificates With cert-manager](/authentication/LetsEncrypt.md)
 - [Installing cert-manager](./authentication/LetsEncrypt.md#Installing-cert-manager)
 - [Configuring cert-manager](./authentication/LetsEncrypt.md#Configuring-cert-manager)
