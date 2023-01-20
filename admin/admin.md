@@ -91,5 +91,28 @@ k8s-ctrl$ kubeadm drain k8s-node-new --ignore-daemonsets --delete-emptydir-data 
 k8s-ctrl$ kubeadm cordon k8s-node-new
 ```
 
+## Assigning Pods to Nodes
+Different nodes may have different resources and you may restrict a pod to run on particular node(s). In order to do so, you may first label a node.
+
+### Labeling Nodes
+The following command gives a node named `k8s-dev-node-4` a label `nceas/nodegroup` with the value `fast`:
+```
+kubectl label nodes k8s-dev-node-4 nceas/nodegroup=fast
+```
+
+### Setting NodeAffinity
+The bellow section of code may be added to the Values.yaml on the top level in your application. It will constrain the pod(s) to run on the nodes having the label `nceas/nodegroup` with the value `fast`. If the selector cannot select a node or nodes, the pod cannot be generated.
+```
+affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: nceas/nodegroup
+            operator: In
+            values:
+            - fast
+```
+
 
 
