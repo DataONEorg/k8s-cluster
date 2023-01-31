@@ -44,7 +44,7 @@ kubectl uncordon docker-ucsb-5
 No steps are necessary before rebooting the controller (currently k8s-ctrl-1).
 
 
-## Adding a node
+## Adding a Node
 
 All commands are run on the new K8s node unless specified.
 
@@ -87,9 +87,21 @@ k8s-ctrl$ kubectl get pods -A -o wide
 
 - Remove the new node if something went wrong
 ```
-k8s-ctrl$ kubeadm drain k8s-node-new --ignore-daemonsets --delete-emptydir-data --force
-k8s-ctrl$ kubeadm cordon k8s-node-new
+k8s-ctrl$ kubectl drain k8s-node-new --ignore-daemonsets --delete-emptydir-data --force
+k8s-ctrl$ kubectl cordon k8s-node-new
 ```
+
+
+## Deleting a Node
+```
+k8s-ctrl$ kubectl drain k8s-node-new --ignore-daemonsets --delete-emptydir-data --force
+k8s-ctrl$ kubectl delete node k8s-node-new
+
+# Optional, run on the deleted node to reset K8s config
+k8s-delete-node$ kubeadm reset
+```
+
+
 
 ## Assigning Pods to Nodes
 Different nodes may have different resources and you may restrict a pod to run on particular node(s). In order to do so, you may first label a node.
