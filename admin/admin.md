@@ -94,11 +94,11 @@ k8s-ctrl$ kubectl cordon k8s-node-new
 
 ## Deleting a Node
 ```
-k8s-ctrl$ kubectl drain k8s-node-new --ignore-daemonsets --delete-emptydir-data --force
-k8s-ctrl$ kubectl delete node k8s-node-new
+k8s-ctrl$ kubectl drain k8s-node-123 --ignore-daemonsets --delete-emptydir-data --force
+k8s-ctrl$ kubectl delete node k8s-node-123
 
 # Optional, run on the deleted node to reset K8s config
-k8s-delete-node$ kubeadm reset
+k8s-node-123$ kubeadm reset
 ```
 
 
