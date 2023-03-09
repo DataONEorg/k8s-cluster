@@ -127,4 +127,16 @@ affinity:
 ```
 
 
+## Renewing Certs
 
+1. Check cert expiration:
+```
+kubeadm certs check-expiration
+```
+2. Renew the certs:
+```
+kubeadm certs renew all
+kubeadm certs check-expiration
+```
+3. Reboot the controller
+4. Rebuild the kubeconfig file
