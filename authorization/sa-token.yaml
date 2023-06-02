@@ -9,4 +9,4 @@ metadata:
     kubernetes.io/service-account.name: ${SERVICE_ACCOUNT}
 type: kubernetes.io/service-account-token
 data:
-  extra: ZGVidWcK
+  extra: ${BASE64_SECRET}

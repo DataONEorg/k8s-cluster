@@ -43,6 +43,7 @@ create_service_account() {
     # Create a secret to be used to identify the SA
     # As of k8s 1.22 a token is not automatically attached to a SA, so needs to be manually created
     # See: https://kubernetes.io/docs/concepts/configuration/secret/#service-account-token-secrets
+    BASE64_SECRET=$(head -c 25 /dev/random | shasum -a 256 | head -c 25 | base64)
     cat sa-token.yaml | SERVICE_ACCOUNT=${SERVICE_ACCOUNT_NAME} envsubst | kubectl apply -f -
 }
 
@@ -76,6 +77,7 @@ set_kube_config_values() {
     ENDPOINT=$(kubectl config view \
     -o jsonpath="{.clusters[?(@.name == \"${CLUSTER_NAME}\")].cluster.server}")
     echo "Endpoint: ${ENDPOINT}"
+    echo "Target Folder: ${TARGET_FOLDER}"
 
     # Set up the config
     echo -e "\\nPreparing ${KUBECFG_FILE_NAME}"
@@ -131,6 +133,6 @@ flatten_config
 apply_rbac
 
 echo -e "\\nAll done! Test with:"
-echo "KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get pods"
-KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get pods
+echo "KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get sa"
+KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get sa
 
