@@ -31,31 +31,36 @@ The authorization information needed to authorization kubectl requests as the se
 subject is kept in a kubectl *configuration*
 file that is created by the k8s admin user for each application. The script *configure-k8s-service-account.sh*
 can be used to create the namespace, serviceAccount, and kubectl configuration file for an application. 
-The syntax is *configure-k8s-service-account application-name*
+The syntax is: 
 
+```sh
+$ configure-k8s-service-account application-name cluster-prefix
+```
+
+where `application-name` is the intended namespace of the application, and `cluster-prefix` is 
+either `dev` for the `dev-k8s` cluster or `prod` for the `prod-k8s` cluster.
 For example, to create the the 'slinky' context, the admin user is used to invoke this script as:
 ::
 
-    configure-k8s-service-account.sh slinky 
+    configure-k8s-service-account.sh slinky dev
 
-This script will add the new context to the ~/.kube/config file.
+This script will add the new context to the ~/.kube/config-dev file.
 
 ## Grant Additional Privileges To The serviceAccount
 
 A serviceAccount is initially created with a default set of privileges granted as configured in the
-template application-access.yaml file. 
+template application-context.yaml file. 
 
 A k8s role and rolebinding are created to grant access to the serviceAccount to perform any
 actions on the namespace created for the application. No actions on any other resource outside
-the designated namespace are granted. To add additional privileges, edit the manifest file 'application-access.yaml',
-changing the namespace, account, API Groups and other values, then grant the privileges using the k8s admin context:
-::
-
-    kubectl create -f application-access.yaml
+the designated namespace are granted. To add additional privileges, you can update the `Role` and
+`RoleBinding` resources for the service account, adding additional roles as needed, and updating it with
+`kubectl apply`.
 
 Note that the defaults will be applied in the initial creation of the serviceaccount, so this step will usually not be needed.
 
 ## References
+
 - https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 - https://kubernetes.io/docs/reference/access-authn-authz/authentication/
 
