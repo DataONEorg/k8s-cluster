@@ -48,27 +48,26 @@ spec:
 The Ceph cluster id and monitors can be obtained with the command:
 
 ```
-sudo ceph -n client.k8sdev --keyring=/etc/ceph/ceph.client.k8sdev.keyring mon dump
+sudo ceph --id k8sdev mon dump
 ```
 
 Ceph pools can be listed with the command:
 
 ```
 # List all pools
-sudo ceph -n client.k8sdev --keyring=/etc/ceph/ceph.client.k8sdev.keyring osd lspools
+sudo ceph --id k8sdev osd lspools
 ```
 
 Images within a pool can be listed with the command:
 
 ```
-sudo rbd -n client.k8sdevrbd --keyring=/etc/ceph/ceph.client.k8sdevrbd.keyring ls k8sdev-pool-ec42-metadata
+sudo rbd --id k8sdevrbd ls k8sdev-pool-ec42-metadata
 
 ```
 
 ### Persistent Volume Claim
 
 The persistent volume claim (PVC) makes the PV available to a pod, and is created in a particular namespace. Here is an example, `rbd-static-pvc.yaml`:
-
 
 ```
 apiVersion: v1
@@ -89,6 +88,12 @@ spec:
   volumeMode: Filesystem/
   # volumeName should be same as PV name
   volumeName: ceph-rbd-static-pv
+```
+
+To view all PVCs, run:
+
+```
+kubectl get pvc -A
 ```
 
 ## Provisioning Dynamic Volumes with Ceph CSI RBD
