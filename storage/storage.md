@@ -118,7 +118,7 @@ Some extended attributes from ceph that may be of use include:
     - `ceph.dir.subdirs`: total subdirectories as direct children
 - Attributes recursive for directory tree
     - `ceph.dir.rbytes`: total size in bytes recursively in subtree
-    - `ceph.dir.rctime`: total size in bytes recursively in subtree
+    - `ceph.dir.rctime`: most recent [ctime](https://unix.stackexchange.com/questions/558124/understanding-find-with-atime-ctime-and-mtime) (in seconds since the epoch) in the recursive tree, helpful in knowing if a dir tree has changed at all
     - `ceph.dir.rentries`: total files and subdirectories recursively in subtree
     - `ceph.dir.rfiles`: total files recursively in subtree
     - `ceph.dir.rsubdirs`: total subdirectories recursively in subtree
