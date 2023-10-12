@@ -84,6 +84,46 @@ The CSI storage driver for Ceph is available from the [Ceph CSI](https://github.
 
 Details of the DataONE k8s usage of Ceph via Ceph CSI is [here](./Ceph/Ceph-CSI.md)
 
+### Ceph and extended attributes
+
+As a filesystem, Ceph stores the metadata that would normally be in inodes in its distributed MDS metadata store to provide fast and extensible access. This has some major benefits for filesystem metadata usage, as one can access metacata about files and directories directly through extended attributes. For example, to find out how many total files are in a directory tree, one can ask for for the extended attribute `ceph.dir.rfiles`, which lists the filecount recursively through all children, or `ceph.dir.rbytes`, which shows the cumulative size of all files. 
+
+Here are some example commands:
+
+```sh
+jones@datateam:/var/data$ getfattr -n ceph.dir.rfiles 10.18739
+# file: 10.18739
+ceph.dir.rfiles="44411905"
+
+jones@datateam:/var/data$ getfattr -n ceph.dir.rsubdirs 10.18739
+# file: 10.18739
+ceph.dir.rsubdirs="266327"
+
+jones@datateam:/var/data$ getfattr -n ceph.dir.rentries 10.18739
+# file: 10.18739
+ceph.dir.rentries="44678232"
+
+jones@datateam:/var/data$ getfattr -n ceph.dir.rbytes 10.18739
+# file: 10.18739
+ceph.dir.rbytes="40199442727340"
+```
+
+What's amazing is that these results return immediately, even when millions of files are involved, because it is a database lookup rather than a script that walks the inode tree counting or adding things up. This is an incredible help when processing large numbers of files. 
+
+Some extended attributes from ceph that may be of use include:
+
+- Attributes for immediate children
+    - `ceph.dir.entries`: total files and subdirectories as direct children
+    - `ceph.dir.files`: total files as direct children
+    - `ceph.dir.subdirs`: total subdirectories as direct children
+- Attributes recursive for directory tree
+    - `ceph.dir.rbytes`: total size in bytes recursively in subtree
+    - `ceph.dir.rctime`: total size in bytes recursively in subtree
+    - `ceph.dir.rentries`: total files and subdirectories recursively in subtree
+    - `ceph.dir.rfiles`: total files recursively in subtree
+    - `ceph.dir.rsubdirs`: total subdirectories recursively in subtree
+
+
 ## Data Recovery
 
 For information regarding recovering data from Ceph based persistent volumes in the event of PV deletion or other problem, see [Data Recovery](./data-recovery.md)
