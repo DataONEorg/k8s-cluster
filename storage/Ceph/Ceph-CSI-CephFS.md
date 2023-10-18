@@ -136,13 +136,27 @@ spec:
 
 ## Troubleshooting
 
-If it ever occurs that a PV can't be unmounted after stoping ceph-csi, follow the directions from https://github.com/kubernetes/kubernetes/issues/77258. For example, if the PV name is cephfs-static-pv, for example:
+1. If a PV can't be unmounted after stopping ceph-csi, follow the directions from https://github.com/kubernetes/kubernetes/issues/77258. For example, if the PV name is `cephfs-static-pv`:
 
-```
+```console
 - kubectl patch pv cephfs-static-pv -p '{"metadata":{"finalizers":null}}'
 - kubectl patch pvc cephfs-static-pvc -p '{"metadata":{"finalizers":null}}'
 - kubectl patch pv cephfs-static-pv -p '{"metadata":{"finalizers":null}}'
 - kubectl patch pod pod/busybox-68df577cd8-s9x8w -p '{"metadata":{"finalizers":null}}'
 ```
 
+2. If you see an error similar to this:
+
+```console
+  Warning  FailedMount  14s   kubelet   MountVolume.MountDevice failed for volume
+"cephfs-metacatbrooke-metacat" : rpc error: code = Internal desc = an error (exit
+status 32) occurred while running mount args: [-t ceph 10.0.3.197:6789,10.0.3.207:
+6789,10.0.3.214:6789,10.0.3.222:6789,10.0.3.223:6789:/volumes/k8s-dev-metacatbrooke
+-subvol-group/k8s-dev-metacatbrooke-subvol/59cad964-ce10-40f9-8242-983da3fd0ce3
+/var/lib/kubelet/plugins/kubernetes.io/csi/pv/cephfs-metacatbrooke-metacat/globalmount
+-o name=client.k8s-dev-metacatbrooke-subvol-user,secretfile=/tmp/csi/keys/keyfile-370004680,
+mds_namespace=cephfs,_netdev] stderr: mount error: no mds server is up or the cluster is laggy
+```
+
+...the message `no mds server is up or the cluster is laggy` is potentially misleading. It is more likely that the `userID` is missing or incorrect, in your `secret.yaml` file. See [Ceph CSI - Important Notes](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/Ceph-CSI.md#important-notes). 
 
