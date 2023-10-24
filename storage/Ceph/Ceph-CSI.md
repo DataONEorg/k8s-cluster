@@ -149,7 +149,7 @@ The `userId` and `userKey` values provide the needed authorization for this.
 1. The example [`secret.yaml`](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/CephFS/secret.yaml) file contains plaintext credentials (listed under `stringData:`), that are automatically base64-encoded at runtime. If you prefer to base64-encode the userID and userKey before adding to the `secret.yaml` file, be sure to use the `-n` option with the `echo` command, (i.e.: `echo -n k8s-dev-myreleasename-subvol-user | base64`), to suppress the trailing newline character. Failure to do so will cause authentication to fail (see also: [CephFS Troubleshooting](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/Ceph-CSI-CephFS.md#troubleshooting)). If they are already base64 encoded in this way, values should be added to the `secret.yaml` file under `data:` instead of `stringData:`.
 1. for dynamically provisioned (ceph-csi provisions them) CephFS volumes and subvolumes, the `adminId` and `adminKey` values are required.
 
-Currently for DataONE, only statically provisioned CephFS subvolumes are used. Also, some of this ceph-csi functionality is only in Alpha release state, so is not ready for production use. Please refer to the [Ceph-CSI Support Matrix](https://github.com/ceph/ceph-csi#support-matrix) for more information.
+Some of the ceph-csi functionality is only in Alpha release state, so is not ready for production use. Please refer to the [Ceph-CSI Support Matrix](https://github.com/ceph/ceph-csi#support-matrix) for more information.
 
 ```
 ---
