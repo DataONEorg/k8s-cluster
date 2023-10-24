@@ -19,7 +19,7 @@ Command line options to helm supply most of the information that is needed for t
 
 Here is an example `csi-config-map.yaml` file:
 
-```
+```yaml
 ---
 # This is a sample configmap that helps define a Ceph cluster configuration
 # as required by the CSI plugins.
@@ -65,8 +65,8 @@ metadata:
 
 The Ceph cluster id and monitor addresses can be obtained with the command:
 
-```
-sudo ceph -n client.k8s --keyring=/etc/ceph/ceph.client.k8s.keyring mon dump
+```console
+$ sudo ceph -n client.k8s --keyring=/etc/ceph/ceph.client.k8s.keyring mon dump
 ```
 
 This example shows the required command for the DataONE k8s production only. Appropriate values must be substituted for the development cluster when installing there.
@@ -75,7 +75,7 @@ The `secret.yaml` file contains the ceph storage cluster login credentials neede
 
 The `userId` and `userKey` values provide the needed authorization for this. These values can be found in the /etc/ceph directory of the k8s control nodes.
 
-```
+```yaml
 ---
 apiVersion: v1
 kind: Secret
@@ -96,13 +96,13 @@ Note that the name and namespace of this secret has to match the name and namesp
 
 To install the RBD plugin:
 
-```
-helm repo add ceph-csi https://ceph.github.io/csi-charts
-kubectl create namespace "ceph-csi-rbd"
-kubectl create -f secret.yaml
-kubectl create -f csi-config-map.yaml
+```console
+$ helm repo add ceph-csi https://ceph.github.io/csi-charts
+$ kubectl create namespace "ceph-csi-rbd"
+$ kubectl create -f secret.yaml
+$ kubectl create -f csi-config-map.yaml
 
-helm install "ceph-csi-rbd" ceph-csi/ceph-csi-rbd \
+$ helm install "ceph-csi-rbd" ceph-csi/ceph-csi-rbd \
   --version 3.4.0 \
   --namespace "ceph-csi-rbd" \
   --set configMapName=ceph-csi-rbd \
@@ -122,17 +122,49 @@ helm install "ceph-csi-rbd" ceph-csi/ceph-csi-rbd \
 
 The installation can be checked with the command:
 
-```
-helm status "ceph-csi-rbd" -n ceph-csi-rbd
+```console
+$ helm status "ceph-csi-rbd" -n ceph-csi-rbd
 ```
 
 The plugin can be stopped and uninstalled with the command:
 
-```
-helm uninstall "ceph-csi-rbd" --namespace "ceph-csi-rbd"
+```console
+$ helm uninstall "ceph-csi-rbd" --namespace "ceph-csi-rbd"
 ```
 
 An example of using RBD based storage with k8s is provided [here](./Ceph-CSI-RBD.md)
+
+
+### Ceph CSI RBD Dynamic Provisioning
+Here is an example RBD SC manifest `csi-rbd-sc.yaml`:
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+   name: csi-rbd-sc
+provisioner: rbd.csi.ceph.com
+parameters:
+   clusterID: 8aa4d4a0-a209-11ea-baf5-ffc787bfc812
+   pool: k8s-pool-ec42-metadata
+   dataPool: k8s-pool-ec42-data
+   imageFeatures: layering
+   csi.storage.k8s.io/provisioner-secret-name: csi-rbd-secret
+   csi.storage.k8s.io/provisioner-secret-namespace: ceph-csi-rbd
+   csi.storage.k8s.io/controller-expand-secret-name: csi-rbd-secret
+   csi.storage.k8s.io/controller-expand-secret-namespace: ceph-csi-rbd
+   csi.storage.k8s.io/node-stage-secret-name: csi-rbd-secret
+   csi.storage.k8s.io/node-stage-secret-namespace: ceph-csi-rbd
+   csi.storage.k8s.io/fstype: ext4
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+```
+
+The storage class is created with the command:
+```console
+$ kubectl create -f csi-rbd-sc.yaml
+```
+
 
 ## Installing Ceph CSI CephFS Plugin
 
@@ -151,7 +183,7 @@ The `userId` and `userKey` values provide the needed authorization for this.
 
 Some of the ceph-csi functionality is only in Alpha release state, so is not ready for production use. Please refer to the [Ceph-CSI Support Matrix](https://github.com/ceph/ceph-csi#support-matrix) for more information.
 
-```
+```yaml
 ---
 apiVersion: v1
 kind: Secret
@@ -166,7 +198,7 @@ stringData:
 
 Here is an example `csi-config-map.yaml` file:
 
-```
+```yaml
 ---
 # This is a sample configmap that helps define a Ceph cluster configuration
 # as required by the CSI plugins.
@@ -212,7 +244,7 @@ metadata:
 
 To install the CephFS plugin:
 
-```
+```yaml
 kubectl create namespace ceph-csi-cephfs
 kubectl create -f secret.yaml
 kubectl create -f csi-config-map.yaml
@@ -236,14 +268,14 @@ helm install "ceph-csi-cephfs" ceph-csi/ceph-csi-cephfs \
 
 The status of the installation can be checked with the command:
 
-```
-helm status "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
+```console
+$ helm status "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
 ```
 
 The plugin can be stopped and uninstalled with the command:
 
-```
-helm uninstall "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
+```console
+$ helm uninstall "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
 ```
 
 An example of using CephFS based storage with k8s is provided [here](./Ceph-CSI-CephFS.md)
@@ -254,8 +286,8 @@ An example of using CephFS based storage with k8s is provided [here](./Ceph-CSI-
 Limited permissions for CephFS dynamic provisioning requires two separate CephFS user accounts:
 
 ```console
-ceph auth get-or-create client.k8s-dev-cephfs mon 'allow r' osd 'allow rw tag cephfs metadata=*' mgr 'allow rw'
-ceph auth get-or-create client.k8s-dev-cephfs-node mon 'allow r' osd 'allow rw tag cephfs *=*' mgr 'allow rw' mds 'allow rw'
+$ ceph auth get-or-create client.k8s-dev-cephfs mon 'allow r' osd 'allow rw tag cephfs metadata=*' mgr 'allow rw'
+$ ceph auth get-or-create client.k8s-dev-cephfs-node mon 'allow r' osd 'allow rw tag cephfs *=*' mgr 'allow rw' mds 'allow rw'
 ```
 
 Configuration for the storageclass and secrets (note two different secrets specified in the storageclass):
