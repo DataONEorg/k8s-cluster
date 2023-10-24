@@ -164,31 +164,8 @@ mds_namespace=cephfs,_netdev] stderr: mount error: no mds server is up or the cl
 
 ## Provisioning Dynamic CephFS Volumes
 
-Dynamic CephFS Volumes can be provisioned using the `csi-cephfs-sc` storageclass on both K8s-prod and K8s-dev clusters. This storageclass already exists, and does not need to be recreated of modified:
+Dynamic CephFS Volumes can be provisioned using the [csi-cephfs-sc storageclass](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/Ceph-CSI.md#ceph-csi-cephfs-dynamic-provisioning) on both K8s-prod and K8s-dev clusters.
 
-```yaml
-allowVolumeExpansion: true
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  annotations:
-  name: csi-cephfs-sc
-mountOptions:
-- debug
-parameters:
-  clusterID: 8aa4d4a0-a209-11ea-baf5-ffc787bfc812
-  csi.storage.k8s.io/controller-expand-secret-name: csi-cephfs-secret
-  csi.storage.k8s.io/controller-expand-secret-namespace: default
-  csi.storage.k8s.io/node-stage-secret-name: csi-cephfs-node-secret
-  csi.storage.k8s.io/node-stage-secret-namespace: default
-  csi.storage.k8s.io/provisioner-secret-name: csi-cephfs-secret
-  csi.storage.k8s.io/provisioner-secret-namespace: default
-  fsName: cephfs
-  volumeNamePrefix: "k8s-dev-csi-vol-"
-provisioner: cephfs.csi.ceph.com
-reclaimPolicy: Delete
-volumeBindingMode: Immediate
-```
  
 Here is an example PVC `csi-cephfs-pvc-test-12.yaml` creating a dynamic CephFS volume:
 
