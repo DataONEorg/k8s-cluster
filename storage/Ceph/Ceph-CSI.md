@@ -248,3 +248,64 @@ helm uninstall "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
 
 An example of using CephFS based storage with k8s is provided [here](./Ceph-CSI-CephFS.md)
 
+
+### Ceph CSI CephFS Dynamic Provisioning
+
+Limited permissions for CephFS dynamic provisioning requires two separate CephFS user accounts:
+
+```console
+ceph auth get-or-create client.k8s-dev-cephfs mon 'allow r' osd 'allow rw tag cephfs metadata=*' mgr 'allow rw'
+ceph auth get-or-create client.k8s-dev-cephfs-node mon 'allow r' osd 'allow rw tag cephfs *=*' mgr 'allow rw' mds 'allow rw'
+```
+
+Configuration for the storageclass and secrets (note two different secrets specified in the storageclass):
+
+`cephfs-secret.yaml`
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: csi-cephfs-secret
+type: Opaque
+data:
+  adminID: k8s-dev-cephfs_username_encoded_in_base64
+  adminKey: k8s-dev-cephfs_key_encoded_in_base64
+```
+
+`cephfs-secret-node.yaml`
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: csi-cephfs-node-secret
+type: Opaque
+data:
+  adminID: k8s-dev-cephfs-node_username_encoded_in_base64
+  adminKey: k8s-dev-cephfs-node_key_encoded_in_base64
+```
+
+`cephfs-sc.yaml`
+```yaml
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+  name: csi-cephfs-sc
+mountOptions:
+- debug
+parameters:
+  clusterID: 8aa4d4a0-a209-11ea-baf5-ffc787bfc812
+  csi.storage.k8s.io/controller-expand-secret-name: csi-cephfs-secret
+  csi.storage.k8s.io/controller-expand-secret-namespace: default
+  csi.storage.k8s.io/node-stage-secret-name: csi-cephfs-node-secret
+  csi.storage.k8s.io/node-stage-secret-namespace: default
+  csi.storage.k8s.io/provisioner-secret-name: csi-cephfs-secret
+  csi.storage.k8s.io/provisioner-secret-namespace: default
+  fsName: cephfs
+  volumeNamePrefix: "k8s-dev-csi-vol-"
+provisioner: cephfs.csi.ceph.com
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+```
+
