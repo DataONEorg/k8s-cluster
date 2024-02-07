@@ -1,15 +1,19 @@
 # Logging Infrastructure
 
-## ** IMPORTANT NOTE: STILL A WORK IN PROGRESS **
+> # ** IMPORTANT: STILL A WORK IN PROGRESS **
+> ## * * * Suggested next steps * * * 
+> ### see [Issue #43 - "Logging Infrastructure for K8s Clusters"](https://github.com/DataONEorg/k8s-cluster/issues/43#issuecomment-1932643235)
+
+## Introduction
 
 In a modern k8s environment, the ELK stack (Elasticsearch - Logstash - Kibana) has been 
-superseded by the EFK stack, where Logstash is replaced by Fluentd, FluentBit or FileBeats.
+superseded by the EFK stack, where Logstash is replaced by Fluentd, FluentBit or FileBeat.
 
 * `Elasticsearch` is a free, open-source search and analytics engine (similar in concept to solr),
 based on the Apache Lucene library.
 * `Kibana` is a data visualization and exploration tool, used for log and time-series analytics,
 application monitoring, and operational intelligence.
-* `FluentBit` & `FileBeats` are logging agents (see below)
+* `FluentBit` & `FileBeat` are logging agents (see below)
 
 ## Simple overview
 
