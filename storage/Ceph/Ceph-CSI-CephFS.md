@@ -162,7 +162,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   volumeMode: Filesystem
 ```
-> **NOTE**: there are some potential gotchas involved with creating the Secret (e.g. `csi-cephfs-secret`, above). Please refer to [Ceph CSI - Important Notes on Secrets and Credentials](./Ceph-CSI.md#important-notes-on-secrets-and-credentials)
+> **NOTE**: there are some potential gotchas involved with creating the Secret (e.g. `csi-cephfs-secret`, above). Please refer to [this section of Ceph-CSI.md](./Ceph-CSI.md#important-notes)
 
 
 This PV is created with the command:
@@ -278,7 +278,7 @@ status 32) occurred while running mount args: [-t ceph 10.0.3.197:6789,10.0.3.20
 mds_namespace=cephfs,_netdev] stderr: mount error: no mds server is up or the cluster is laggy
 ```
 
-...the message `no mds server is up or the cluster is laggy` is potentially misleading. It is more likely that the `userID` is missing or incorrect, in your `secret.yaml` file. See [Ceph CSI - Important Notes on Secrets and Credentials](./Ceph-CSI.md#important-notes-on-secrets-and-credentials).
+...the message `no mds server is up or the cluster is laggy` is potentially misleading. It is more likely that the `userID` is missing or incorrect, in your `secret.yaml` file. See [Ceph CSI - Important Notes](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/Ceph-CSI.md#important-notes). 
 
 
 

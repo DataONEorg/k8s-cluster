@@ -19,7 +19,7 @@ Command line options to helm supply most of the information that is needed for t
 
 Here is an example `csi-config-map.yaml` file:
 
-```json
+```yaml
 ---
 # This is a sample configmap that helps define a Ceph cluster configuration
 # as required by the CSI plugins.
@@ -173,7 +173,13 @@ Command line options to helm supply most of the information that is needed for t
 
 The `secret.yaml` file contains the ceph storage cluster login credentials needed for ceph-csi to mount CephFS subvolumes that are statically provisioned. These CephFS subvolumes must be created manually with the Linux `ceph` utility before they can be accessed by ceph-csi.
 
-The `userId` and `userKey` values provide the needed authorization for this.
+The `userId` and `userKey` values provide the needed authorization for this. 
+
+### Important Notes
+1. ceph-generated usernames are typically of the form: `client.k8s-dev-releasename-subvol-user`. Note that you must omit the `client.` prefix when adding to the `secret.yaml` file (i.e. use only: `k8s-dev-myreleasename-subvol-user`).
+    * (However, when mounting the volume via `fstab`, the `client.` prefix should be retained for the keyring file.)
+1. The example [`secret.yaml`](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/CephFS/secret.yaml) file contains plaintext credentials (listed under `stringData:`), that are automatically base64-encoded at runtime. If you prefer to base64-encode the userID and userKey before adding to the `secret.yaml` file, be sure to use the `-n` option with the `echo` command, (i.e.: `echo -n k8s-dev-myreleasename-subvol-user | base64`), to suppress the trailing newline character. Failure to do so will cause authentication to fail (see also: [CephFS Troubleshooting](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/Ceph-CSI-CephFS.md#troubleshooting)). If they are already base64 encoded in this way, values should be added to the `secret.yaml` file under `data:` instead of `stringData:`.
+1. for dynamically provisioned (ceph-csi provisions them) CephFS volumes and subvolumes, the `adminId` and `adminKey` values are required.
 
 Some of the ceph-csi functionality is only in Alpha release state, so is not ready for production use. Please refer to the [Ceph-CSI Support Matrix](https://github.com/ceph/ceph-csi#support-matrix) for more information.
 
@@ -335,10 +341,3 @@ reclaimPolicy: Delete
 volumeBindingMode: Immediate
 ```
 
-### Important Notes on Secrets and Credentials
-
-1. In the Ceph client file configurations, the userid will likely contain a prefix; for example: `client.k8s-dev-releasename-subvol-user`. Note that you must omit the `client.` prefix when adding to the `secret.yaml` file (i.e. use only: `k8s-dev-myreleasename-subvol-user`).
-    * (However, when mounting the volume via `fstab`, the `client.` prefix should be retained for the keyring file.)
-1. In the Ceph user configuration files, the userKey is already base64 encoded, but ***it needs to be base64-encoded again*** when the kubernetes Secret is created. Put the Ceph-provided base64 string in the `stringData.userKey` field, and it will automatically be base64-encoded again, upon creation.
-1. If you prefer to manually base64-encode the userID and userKey before adding to the `secret.yaml` file, be sure to use the `-n` option with the `echo` command, (i.e.: `echo -n k8s-dev-myreleasename-subvol-user | base64`), to suppress the trailing newline character. Failure to do so will cause authentication to fail (see also: [CephFS Troubleshooting](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/Ceph-CSI-CephFS.md#troubleshooting)). If they are already (double-)base64 encoded in this way, values should be added to the `secret.yaml` file under `data:` instead of `stringData:`.
-1. for dynamically provisioned CephFS volumes and subvolumes (ceph-csi provisions them), the `adminId` and `adminKey` values are required.
