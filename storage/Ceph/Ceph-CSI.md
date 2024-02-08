@@ -19,7 +19,7 @@ Command line options to helm supply most of the information that is needed for t
 
 Here is an example `csi-config-map.yaml` file:
 
-```
+```yaml
 ---
 # This is a sample configmap that helps define a Ceph cluster configuration
 # as required by the CSI plugins.
@@ -65,8 +65,8 @@ metadata:
 
 The Ceph cluster id and monitor addresses can be obtained with the command:
 
-```
-sudo ceph -n client.k8s --keyring=/etc/ceph/ceph.client.k8s.keyring mon dump
+```console
+$ sudo ceph -n client.k8s --keyring=/etc/ceph/ceph.client.k8s.keyring mon dump
 ```
 
 This example shows the required command for the DataONE k8s production only. Appropriate values must be substituted for the development cluster when installing there.
@@ -75,7 +75,7 @@ The `secret.yaml` file contains the ceph storage cluster login credentials neede
 
 The `userId` and `userKey` values provide the needed authorization for this. These values can be found in the /etc/ceph directory of the k8s control nodes.
 
-```
+```yaml
 ---
 apiVersion: v1
 kind: Secret
@@ -96,13 +96,13 @@ Note that the name and namespace of this secret has to match the name and namesp
 
 To install the RBD plugin:
 
-```
-helm repo add ceph-csi https://ceph.github.io/csi-charts
-kubectl create namespace "ceph-csi-rbd"
-kubectl create -f secret.yaml
-kubectl create -f csi-config-map.yaml
+```console
+$ helm repo add ceph-csi https://ceph.github.io/csi-charts
+$ kubectl create namespace "ceph-csi-rbd"
+$ kubectl create -f secret.yaml
+$ kubectl create -f csi-config-map.yaml
 
-helm install "ceph-csi-rbd" ceph-csi/ceph-csi-rbd \
+$ helm install "ceph-csi-rbd" ceph-csi/ceph-csi-rbd \
   --version 3.4.0 \
   --namespace "ceph-csi-rbd" \
   --set configMapName=ceph-csi-rbd \
@@ -122,17 +122,49 @@ helm install "ceph-csi-rbd" ceph-csi/ceph-csi-rbd \
 
 The installation can be checked with the command:
 
-```
-helm status "ceph-csi-rbd" -n ceph-csi-rbd
+```console
+$ helm status "ceph-csi-rbd" -n ceph-csi-rbd
 ```
 
 The plugin can be stopped and uninstalled with the command:
 
-```
-helm uninstall "ceph-csi-rbd" --namespace "ceph-csi-rbd"
+```console
+$ helm uninstall "ceph-csi-rbd" --namespace "ceph-csi-rbd"
 ```
 
 An example of using RBD based storage with k8s is provided [here](./Ceph-CSI-RBD.md)
+
+
+### Ceph CSI RBD Dynamic Provisioning
+Here is an example RBD SC manifest `csi-rbd-sc.yaml`:
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+   name: csi-rbd-sc
+provisioner: rbd.csi.ceph.com
+parameters:
+   clusterID: 8aa4d4a0-a209-11ea-baf5-ffc787bfc812
+   pool: k8s-pool-ec42-metadata
+   dataPool: k8s-pool-ec42-data
+   imageFeatures: layering
+   csi.storage.k8s.io/provisioner-secret-name: csi-rbd-secret
+   csi.storage.k8s.io/provisioner-secret-namespace: ceph-csi-rbd
+   csi.storage.k8s.io/controller-expand-secret-name: csi-rbd-secret
+   csi.storage.k8s.io/controller-expand-secret-namespace: ceph-csi-rbd
+   csi.storage.k8s.io/node-stage-secret-name: csi-rbd-secret
+   csi.storage.k8s.io/node-stage-secret-namespace: ceph-csi-rbd
+   csi.storage.k8s.io/fstype: ext4
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+```
+
+The storage class is created with the command:
+```console
+$ kubectl create -f csi-rbd-sc.yaml
+```
+
 
 ## Installing Ceph CSI CephFS Plugin
 
@@ -141,11 +173,17 @@ Command line options to helm supply most of the information that is needed for t
 
 The `secret.yaml` file contains the ceph storage cluster login credentials needed for ceph-csi to mount CephFS subvolumes that are statically provisioned. These CephFS subvolumes must be created manually with the Linux `ceph` utility before they can be accessed by ceph-csi.
 
-The `userId` and `userKey` values provide the needed authorization for this. Note that for dynamically provisioned (ceph-csi provisions them) CephFS volumes and subvolumes, the `adminId` and `adminKey` values are required.
+The `userId` and `userKey` values provide the needed authorization for this. 
 
-Currently for DataONE, only statically provisioned CephFS subvolumes are used. Also, currently this ceph-csi feature is only in Alpha release state, so is not ready for production use. Please refer to the [Ceph-CSI Support Matrix](https://github.com/ceph/ceph-csi#support-matrix) for more information.
+### Important Notes
+1. ceph-generated usernames are typically of the form: `client.k8s-dev-releasename-subvol-user`. Note that you must omit the `client.` prefix when adding to the `secret.yaml` file (i.e. use only: `k8s-dev-myreleasename-subvol-user`).
+    * (However, when mounting the volume via `fstab`, the `client.` prefix should be retained for the keyring file.)
+1. The example [`secret.yaml`](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/CephFS/secret.yaml) file contains plaintext credentials (listed under `stringData:`), that are automatically base64-encoded at runtime. If you prefer to base64-encode the userID and userKey before adding to the `secret.yaml` file, be sure to use the `-n` option with the `echo` command, (i.e.: `echo -n k8s-dev-myreleasename-subvol-user | base64`), to suppress the trailing newline character. Failure to do so will cause authentication to fail (see also: [CephFS Troubleshooting](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/Ceph-CSI-CephFS.md#troubleshooting)). If they are already base64 encoded in this way, values should be added to the `secret.yaml` file under `data:` instead of `stringData:`.
+1. for dynamically provisioned (ceph-csi provisions them) CephFS volumes and subvolumes, the `adminId` and `adminKey` values are required.
 
-```
+Some of the ceph-csi functionality is only in Alpha release state, so is not ready for production use. Please refer to the [Ceph-CSI Support Matrix](https://github.com/ceph/ceph-csi#support-matrix) for more information.
+
+```yaml
 ---
 apiVersion: v1
 kind: Secret
@@ -160,7 +198,7 @@ stringData:
 
 Here is an example `csi-config-map.yaml` file:
 
-```
+```yaml
 ---
 # This is a sample configmap that helps define a Ceph cluster configuration
 # as required by the CSI plugins.
@@ -206,7 +244,7 @@ metadata:
 
 To install the CephFS plugin:
 
-```
+```yaml
 kubectl create namespace ceph-csi-cephfs
 kubectl create -f secret.yaml
 kubectl create -f csi-config-map.yaml
@@ -230,15 +268,76 @@ helm install "ceph-csi-cephfs" ceph-csi/ceph-csi-cephfs \
 
 The status of the installation can be checked with the command:
 
-```
-helm status "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
+```console
+$ helm status "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
 ```
 
 The plugin can be stopped and uninstalled with the command:
 
-```
-helm uninstall "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
+```console
+$ helm uninstall "ceph-csi-cephfs" --namespace "ceph-csi-cephfs"
 ```
 
 An example of using CephFS based storage with k8s is provided [here](./Ceph-CSI-CephFS.md)
+
+
+### Ceph CSI CephFS Dynamic Provisioning
+
+Limited permissions for CephFS dynamic provisioning requires two separate CephFS user accounts:
+
+```console
+$ ceph auth get-or-create client.k8s-dev-cephfs mon 'allow r' osd 'allow rw tag cephfs metadata=*' mgr 'allow rw'
+$ ceph auth get-or-create client.k8s-dev-cephfs-node mon 'allow r' osd 'allow rw tag cephfs *=*' mgr 'allow rw' mds 'allow rw'
+```
+
+Configuration for the storageclass and secrets (note two different secrets specified in the storageclass):
+
+`cephfs-secret.yaml`
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: csi-cephfs-secret
+type: Opaque
+data:
+  adminID: k8s-dev-cephfs_username_encoded_in_base64
+  adminKey: k8s-dev-cephfs_key_encoded_in_base64
+```
+
+`cephfs-secret-node.yaml`
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: csi-cephfs-node-secret
+type: Opaque
+data:
+  adminID: k8s-dev-cephfs-node_username_encoded_in_base64
+  adminKey: k8s-dev-cephfs-node_key_encoded_in_base64
+```
+
+`cephfs-sc.yaml`
+```yaml
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+  name: csi-cephfs-sc
+mountOptions:
+- debug
+parameters:
+  clusterID: 8aa4d4a0-a209-11ea-baf5-ffc787bfc812
+  csi.storage.k8s.io/controller-expand-secret-name: csi-cephfs-secret
+  csi.storage.k8s.io/controller-expand-secret-namespace: default
+  csi.storage.k8s.io/node-stage-secret-name: csi-cephfs-node-secret
+  csi.storage.k8s.io/node-stage-secret-namespace: default
+  csi.storage.k8s.io/provisioner-secret-name: csi-cephfs-secret
+  csi.storage.k8s.io/provisioner-secret-namespace: default
+  fsName: cephfs
+  volumeNamePrefix: "k8s-dev-csi-vol-"
+provisioner: cephfs.csi.ceph.com
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+```
 

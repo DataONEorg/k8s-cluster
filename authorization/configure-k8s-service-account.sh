@@ -40,10 +40,13 @@ create_namespace() {
 create_service_account() {
     echo -e "\\nCreating a service account in ${NAMESPACE} namespace: ${SERVICE_ACCOUNT_NAME}"
     kubectl create sa "${SERVICE_ACCOUNT_NAME}" --namespace "${NAMESPACE}" --save-config
+}
+
+create_sa_secret() {
     # Create a secret to be used to identify the SA
     # As of k8s 1.22 a token is not automatically attached to a SA, so needs to be manually created
     # See: https://kubernetes.io/docs/concepts/configuration/secret/#service-account-token-secrets
-    BASE64_SECRET=$(head -c 25 /dev/random | shasum -a 256 | head -c 25 | base64)
+    export BASE64_SECRET=$(head -c 25 /dev/random | shasum -a 256 | head -c 25 | base64)
     cat sa-token.yaml | SERVICE_ACCOUNT=${SERVICE_ACCOUNT_NAME} envsubst | kubectl apply -f -
 }
 
@@ -125,6 +128,7 @@ echo "Starting on ${TODAY}..."
 create_target_folder
 create_namespace
 create_service_account
+create_sa_secret
 get_secret_name_from_service_account
 extract_ca_crt_from_secret
 get_user_token_from_secret
