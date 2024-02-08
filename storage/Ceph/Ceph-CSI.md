@@ -19,7 +19,7 @@ Command line options to helm supply most of the information that is needed for t
 
 Here is an example `csi-config-map.yaml` file:
 
-```yaml
+```json
 ---
 # This is a sample configmap that helps define a Ceph cluster configuration
 # as required by the CSI plugins.
