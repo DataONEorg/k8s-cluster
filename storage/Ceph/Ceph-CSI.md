@@ -173,7 +173,7 @@ Command line options to helm supply most of the information that is needed for t
 
 The `secret.yaml` file contains the ceph storage cluster login credentials needed for ceph-csi to mount CephFS subvolumes that are statically provisioned. These CephFS subvolumes must be created manually with the Linux `ceph` utility before they can be accessed by ceph-csi.
 
-The `userId` and `userKey` values provide the needed authorization for this.
+The `userId` and `userKey` values provide the needed authorization for this. See [Important Notes on Secrets and Credentials](#important-notes-on-secrets-and-credentials), below.
 
 Some of the ceph-csi functionality is only in Alpha release state, so is not ready for production use. Please refer to the [Ceph-CSI Support Matrix](https://github.com/ceph/ceph-csi#support-matrix) for more information.
 
