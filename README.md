@@ -50,7 +50,6 @@ Documentation is organized into an overview, and then separate config files and 
 ### [Ceph CSI](./storage/Ceph/Ceph-CSI.md#)
 - [Installing Ceph CSI RBD Plugin](./storage/Ceph/Ceph-CSI.md#Installing-Ceph-CSI-RBD-Plugin)
 - [Installing Ceph CSI CephFS Plugin](./storage/Ceph/Ceph-CSI.md#Installing-Ceph-CSI-CephFS-Plugin)
-- [Important Notes on Secrets and Credentials](./Ceph-CSI.md#important-notes-on-secrets-and-credentials)
 
 #### [Ceph CSI CephFS](./storage/Ceph/Ceph-CSI-CephFS.md)
 - [Provisioning Static CephFS Volumes](./storage/Ceph/Ceph-CSI-CephFS.md#Provisioning-Static-CephFS-Volumes)
