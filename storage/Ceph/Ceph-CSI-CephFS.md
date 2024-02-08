@@ -133,7 +133,7 @@ Once a ceph subvolume has been created, and the ceph-csi cephfs plugin has been 
 
 Here is the example PV manifest, `cephfs-static-pv.yaml`:
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -162,6 +162,8 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   volumeMode: Filesystem
 ```
+> **NOTE**: there are some potential gotchas involved with creating the Secret (e.g. `csi-cephfs-secret`, above). Please refer to [this section of Ceph-CSI.md](./Ceph-CSI.md#important-notes)
+
 
 This PV is created with the command:
 
