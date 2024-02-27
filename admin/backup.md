@@ -81,3 +81,10 @@ deployment.apps/velero patched
 $ kubectl patch daemonset node-agent -n velero --patch '{"spec":{"template":{"spec":{"containers":[{"name": "node-agent", "resources": {"limits":{"cpu": "4", "memory": "8192Mi"}, "requests": {"cpu": "2", "memory": "4096Mi"}}}]}}}}'
 daemonset.apps/node-agent patched
 ```
+
+### Change Target URL
+
+```
+velero backup-location get default -o yaml
+kubectl edit -n velero BackupStorageLocation
+```
