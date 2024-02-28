@@ -8,9 +8,14 @@ We are using [Velero](https://velero.io) to backup our two K8s clusters (k8s and
 
 ## Operations
 
-### Run a manual backup
+### Run a full backup
 ```
 velero backup create backup-full-1
+```
+
+### Run a backup of a namespace
+```
+velero backup create hwitw-backup-1 --include-namespaces hwitw
 ```
 
 ### Check on backups
@@ -53,6 +58,18 @@ velero install \
   --use-volume-snapshots=true \
   --features=EnableCSI
 ```
+
+
+## Excluding volumes
+We are using the `opt-out` approach to Velero FSB backups. Everything is backed up, unless excluded. Here is how to exclude volumes:
+
+```
+kubectl -n YOUR_POD_NAMESPACE annotate pod/YOUR_POD_NAME backup.velero.io/backup-volumes-excludes=YOUR_VOLUME_NAME_1,YOUR_VOLUME_NAME_2,...
+kubectl -n brooke annotate pod/metacatbrooke-dataone-indexer-845fd4c5f5-cnwc2 backup.velero.io/backup-volumes-excludes=metacatbrooke-temp-tripledb-volume
+```
+
+https://velero.io/docs/v1.13/file-system-backup/#using-the-opt-out-approach
+
 
 
 ## Changing Install Options
