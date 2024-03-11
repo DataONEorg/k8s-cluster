@@ -133,10 +133,18 @@ affinity:
 ```
 kubeadm certs check-expiration
 ```
+
 2. Renew the certs:
 ```
 kubeadm certs renew all
 kubeadm certs check-expiration
 ```
+
 3. Reboot the controller
-4. Rebuild the kubeconfig file
+```
+sudo reboot
+```
+
+4. Update the config-dev/config-prod gpg file
+    - GPG encypt `/etc/kubernetes/admin.conf`
+    - Upload to https://github.nceas.ucsb.edu/NCEAS/security/tree/main/k8s
