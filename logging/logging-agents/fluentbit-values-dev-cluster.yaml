@@ -1,0 +1,83 @@
+## Example Value overrides for deploying the bitnami Fluent Bit chart
+## (https://github.com/bitnami/charts/tree/main/bitnami/fluent-bit/) on the NCEAS dev cluster
+##
+## To install:
+##  $  helm install <myrelease> -n <namespace>              \
+##                  -f fluentbit-values-dev-cluster.yaml    \
+##                  oci://registry-1.docker.io/bitnamicharts/fluent-bit
+##
+global:
+  ## Use a dynamically-created PV
+  storageClass: csi-rbd-sc
+
+image:
+  debug: true
+
+daemonset:
+  ## @param daemonset.enabled Use a daemonset instead of a deployment. `replicaCount` will not take effect.
+  ##
+  enabled: true
+
+config:
+  logLevel: debug
+
+  ## @param config.service [string] Defines the global behaviour of the Fluent Bit engine.
+  ##
+  ## NOTE: must override here, to add location for Parsers_File
+  service: |
+    [SERVICE]
+        Flush        {{ .Values.config.flush }}
+        Daemon       Off
+        LogLevel     {{ .Values.config.logLevel }}
+        Config_Watch On
+        HTTP_Server  On
+        HTTP_Listen  0.0.0.0
+        HTTP_Port    {{ .Values.containerPorts.http }}
+        Parsers_File /opt/bitnami/fluent-bit/conf/custom_parsers.conf
+
+  ## @param config.inputs [string] Inputs from which to collect data
+  ## https://docs.fluentbit.io/manual/pipeline/inputs
+  inputs: |
+    [INPUT]
+        Name              tail
+        Path              /var/log/containers/*.log
+        Path_Key          filename
+
+  ## @param config.filters [string] Set of plugins that can be used to filter, modify, or enrich log data that is processed by Fluent Bit.
+  ## https://docs.fluentbit.io/manual/pipeline/filters
+  filters: |
+    [FILTER]
+        name             parser
+        match            *
+        key_name         log
+        Reserve_Data     True
+        Preserve_Key     On
+        parser           named_capture
+
+  ## @param config.outputs [string] Outputs to send the collected data to different destinations
+  ## https://docs.fluentbit.io/manual/pipeline/outputs
+  outputs: |
+    [OUTPUT]
+        Name                es
+        Match               *
+        Host                ekbrooke-elasticsearch.brooke.svc.cluster.local
+        Port                9200
+        Index               fluentbit
+        Type                flb_type
+        Suppress_Type_Name  On
+
+
+  ## @param config.customParsers [string] Custom-defined Parsers
+  ## https://docs.fluentbit.io/manual/pipeline/parsers
+  customParsers: |
+    [MULTILINE_PARSER]
+        name          multiline_java
+        type          regex
+        flush_timeout 1000
+        rule          "start_state"  "/^[_\-0-9a-zA-Z]+ (\d+\-\d+\:\d+\:\d+)\:?\s?(.*)/"   "cont"
+        rule          "cont"         "/^\s+at.*/"                                          "cont"
+
+    [PARSER]
+        Name          named_capture
+        Format        regex
+        Regex         /(?<message>.*)/m
