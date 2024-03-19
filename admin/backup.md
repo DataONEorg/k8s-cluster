@@ -25,6 +25,11 @@ velero backup describe --details backup-full-1
 velero backup logs backup-full-1
 ```
 
+### Set an automatic backup schedule
+```
+velero schedule create full-backup --schedule="0 3 * * *"
+```
+
 
 ## Setup
 Velero is run from a location with access to both the K8s/K8s-dev admin credentials and the Anacapa Velero S3 user credentials. This can be a VM, a laptop, etc. 
