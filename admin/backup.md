@@ -43,7 +43,7 @@ velero install \
   --plugins velero/velero-plugin-for-aws:v1.9.0 \
   --bucket k8s-dev \
   --secret-file /Users/outin/.aws/velero \
-  --backup-location-config region=default,s3Url=https://s3.anacapa.nceas.ucsb.edu:9000,s3ForcePathStyle=true \
+  --backup-location-config region=default,s3Url=https://s3.anacapa.nceas.ucsb.edu,s3ForcePathStyle=true \
   --use-node-agent \
   --use-volume-snapshots=false \
   --uploader-type=kopia \
@@ -57,7 +57,7 @@ velero install \
   --plugins velero/velero-plugin-for-aws:v1.9.0,velero/velero-plugin-for-csi:v0.7.0 \
   --bucket k8s-dev \
   --secret-file /Users/outin/.aws/velero \
-  --backup-location-config region=default,s3Url=https://s3.anacapa.nceas.ucsb.edu:9000,s3ForcePathStyle=true \
+  --backup-location-config region=default,s3Url=https://s3.anacapa.nceas.ucsb.edu,s3ForcePathStyle=true \
   --snapshot-location-config region=default \
   --use-node-agent \
   --use-volume-snapshots=true \
