@@ -75,6 +75,13 @@ kubectl -n brooke annotate pod/metacatbrooke-dataone-indexer-845fd4c5f5-cnwc2 ba
 
 https://velero.io/docs/v1.13/file-system-backup/#using-the-opt-out-approach
 
+## Finding volumes to exclude
+```
+kubectl get pv
+kubectl describe pv cephfs-arctic-pv
+kubectl describe -n jones pvc cephfs-arctic-pvc
+# look for the pod names in "Used By:"
+```
 
 
 ## Changing Install Options
@@ -110,3 +117,4 @@ daemonset.apps/node-agent patched
 velero backup-location get default -o yaml
 kubectl edit -n velero BackupStorageLocation
 ```
+
