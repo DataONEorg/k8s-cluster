@@ -27,7 +27,7 @@ velero backup logs backup-full-1
 
 ### Set an automatic backup schedule
 ```
-velero schedule create full-backup --schedule="0 3 * * *"
+velero schedule create full-backup --schedule="0 3 * * *" --ttl 2160h0m0s
 ```
 
 
