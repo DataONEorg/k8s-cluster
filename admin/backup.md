@@ -34,6 +34,13 @@ velero schedule create full-backup --schedule="0 3 * * *" --ttl 2160h0m0s
 ## Setup
 Velero is run from a location with access to both the K8s/K8s-dev admin credentials and the Anacapa Velero S3 user credentials. This can be a VM, a laptop, etc. 
 
+### Overall steps
+- Install the velero binary from homebrew, GitHub, etc
+- Setup kubectl so that it can connect to the K8s clusters as admin
+- Run the `velero install` command
+- Increase the memory limits and backup timeout
+
+
 ### K8s-prod
 Velero 1.13.0 FSB install options (current):
 ```
@@ -115,6 +122,9 @@ kubectl delete crds -l component=velero
 ### Modifying memory settings
 
 https://velero.io/docs/main/customize-installation/#customize-resource-requests-and-limits
+- Add `- --fs-backup-timeout` to spec.template.spec.containers
+- Increase memory for Velero pod
+- Increase memory for node-agent pods
 
 ```console
 $ kubectl edit deploy velero -n velero
