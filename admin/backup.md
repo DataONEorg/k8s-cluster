@@ -34,6 +34,22 @@ velero schedule create full-backup --schedule="0 3 * * *" --ttl 2160h0m0s
 ## Setup
 Velero is run from a location with access to both the K8s/K8s-dev admin credentials and the Anacapa Velero S3 user credentials. This can be a VM, a laptop, etc. 
 
+### K8s-prod
+Velero 1.13.0 FSB install options (current):
+```
+velero install \
+  --provider aws \
+  --plugins velero/velero-plugin-for-aws:v1.9.0 \
+  --bucket k8s-prod \
+  --secret-file /Users/outin/.aws/minio-k8s-prod \
+  --backup-location-config region=default,s3Url=https://s3.anacapa.nceas.ucsb.edu,s3ForcePathStyle=true \
+  --use-node-agent \
+  --use-volume-snapshots=false \
+  --uploader-type=kopia \
+  --default-volumes-to-fs-backup
+```
+
+
 ### K8s-dev
 
 Velero 1.13.0 FSB install options (current):
