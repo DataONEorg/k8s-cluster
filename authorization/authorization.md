@@ -44,7 +44,10 @@ For example, to create the the 'slinky' context, the admin user is used to invok
 
     configure-k8s-service-account.sh slinky dev
 
-This script will add the new context to the ~/.kube/config-dev file.
+This script will add the new context in two places:
+
+1. It will be merged with the existing contents of the `~/.kube/config-dev` file. This new version of `config-dev` should be gpg-encrypted and pushed to git.
+2. It will also be saved in a `<application-name>-dev.config` file, which contains only the details for that particular context (e.g. `slinky-dev.config`). This file is typically not pushed to git, but may be useful for sharing with outside developers who need acess only to that context.
 
 ## Grant Additional Privileges To The serviceAccount
 
