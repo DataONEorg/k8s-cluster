@@ -1,0 +1,17 @@
+## Example Value overrides for deploying the bitnami Elasticsearch + Kibana chart
+## (https://github.com/bitnami/charts/blob/main/bitnami/elasticsearch/README.md)
+## on the NCEAS dev cluster
+##
+##  $  helm install <myrelease> -n <namespace>      \
+##                  -f ek-values-dev-cluster.yaml   \
+##                  oci://registry-1.docker.io/bitnamicharts/elasticsearch
+##
+##  $  kubectl port-forward -n <namespace> svc/<release>-kibana 5601:5601
+##  (e.g:  kubectl port-forward -n brooke svc/elkbrooke-kibana 5601:5601 )
+##
+global:
+  ## Use a dynamically-created PV
+  storageClass: csi-rbd-sc
+
+  ## enable the Kibana subchart
+  kibanaEnabled: true
