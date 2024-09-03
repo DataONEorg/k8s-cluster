@@ -147,7 +147,7 @@ https://velero.io/docs/main/customize-installation/#customize-resource-requests-
 $ kubectl edit deploy velero -n velero
 deployment.apps/velero edited
 
-$ kubectl patch deployment velero -n velero --patch '{"spec":{"template":{"spec":{"containers":[{"name": "velero", "resources": {"limits":{"cpu": "4", "memory": "4096Mi"}, "requests": {"cpu": "2", "memory": "1024Mi"}}}]}}}}'
+$ kubectl patch deployment velero -n velero --patch '{"spec":{"template":{"spec":{"containers":[{"name": "velero", "resources": {"limits":{"cpu": "4", "memory": "16384Mi"}, "requests": {"cpu": "2", "memory": "4096Mi"}}}]}}}}'
 deployment.apps/velero patched
 
 $ kubectl patch daemonset node-agent -n velero --patch '{"spec":{"template":{"spec":{"containers":[{"name": "node-agent", "resources": {"limits":{"cpu": "4", "memory": "8192Mi"}, "requests": {"cpu": "2", "memory": "4096Mi"}}}]}}}}'
