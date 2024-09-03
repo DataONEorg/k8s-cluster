@@ -91,9 +91,26 @@ velero install \
 ## Excluding volumes
 We are using the `opt-out` approach to Velero FSB backups. Everything is backed up, unless excluded. Here is how to exclude volumes:
 
+Find the failed backup volume:
+```
+$ velero backup describe full-backup-20240903010056 --details
+
+  Pod Volume Backups - kopia:
+    Completed:
+      ...
+    Failed:
+      polder/prod-gleaner-76df9dfc54-kkcgt: s3system-volume
+
+```
+
+Add an annotation to exclude it from backups:
 ```
 kubectl -n YOUR_POD_NAMESPACE annotate pod/YOUR_POD_NAME backup.velero.io/backup-volumes-excludes=YOUR_VOLUME_NAME_1,YOUR_VOLUME_NAME_2,...
-kubectl -n brooke annotate pod/metacatbrooke-dataone-indexer-845fd4c5f5-cnwc2 backup.velero.io/backup-volumes-excludes=metacatbrooke-temp-tripledb-volume
+```
+
+```
+kubectl -n polder annotate pod/prod-gleaner-76df9dfc54-kkcgt backup.velero.io/backup-volumes-excludes=s3system-volume
+kubectl -n polder get pod/prod-gleaner-76df9dfc54-kkcgt -o jsonpath='{.metadata.annotations}'
 ```
 
 https://velero.io/docs/v1.13/file-system-backup/#using-the-opt-out-approach
