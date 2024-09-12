@@ -138,5 +138,8 @@ sudo reboot
 ```
 
 4. Update the config-dev/config-prod gpg file
-    - GPG encypt `/etc/kubernetes/admin.conf`
+    - Copy the keys `cluster/certificate-authority-data` and user info for the `dev-k8s` or `prod-k8s` users (`user/client-certificate-data` and `user/client-key-data` from `/etc/kubernetes/admin.conf` into the appropriate `config-dev`/`config-prod` file
+        - Note that the admin.conf uses a different username than we use in our client files (we use `dev-k8s` and `prod-k8s` as the context usernames)
+        - Be sure to leave the other contexts (including user accounts, namespaces, etc) in place, such as `dev-slinky`, `dev-metadig`, etc.
+    - GPG encypt the modified `config-dev`/`config-prod` file
     - Upload to https://github.nceas.ucsb.edu/NCEAS/security/tree/main/k8s
