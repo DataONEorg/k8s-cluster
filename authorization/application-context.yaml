@@ -28,7 +28,7 @@ rules:
   ## Allow read-only access ('kubectl get') on rbac roles and rolebindings:
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["roles", "rolebindings"]
-  verbs: ["get"]
+  verbs: ["create", "get", "delete"]
 
 ---
 kind: RoleBinding
