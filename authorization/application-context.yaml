@@ -25,9 +25,13 @@ rules:
   - jobs
   - cronjobs
   verbs: ["*"]
-  ## Allow read-only access ('kubectl get') on rbac roles and rolebindings:
+  ## Allow access to rbac roles and rolebindings (needed for Bitnami RabbitMQ charts):
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["roles", "rolebindings"]
+  verbs: ["create", "get", "delete"]
+  ## Allow access to poddisruptionbudgets (needed for newer Bitnami Postgresql charts)
+- apiGroups:  ["policy"]
+  resources: ["poddisruptionbudgets"]
   verbs: ["create", "get", "delete"]
 
 ---
