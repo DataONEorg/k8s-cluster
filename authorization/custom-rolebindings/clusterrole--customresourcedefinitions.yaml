@@ -5,4 +5,7 @@ metadata:
 rules:
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
-    verbs: ["create", "update", "get", "list", "watch", "delete"]
+    verbs: ["create", "update", "get", "list", "watch", "delete", "patch", "deletecollection"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles", "clusterrolebindings"]
+    verbs: ["create", "update", "get", "list", "watch", "delete", "patch", "deletecollection", "bind", "escalate"]

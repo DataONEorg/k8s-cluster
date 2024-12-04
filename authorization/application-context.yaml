@@ -25,10 +25,11 @@ rules:
   - jobs
   - cronjobs
   verbs: ["*"]
-  ## Allow access to rbac roles and rolebindings (needed for Bitnami RabbitMQ charts):
+  ## Allow access to rbac roles and rolebindings (needed for some Bitnami charts):
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["roles", "rolebindings"]
-  verbs: ["create", "get", "delete"]
+  verbs: ["create", "get", "delete", "update", "patch", "list", "watch", "deletecollection", "bind"]
+
   ## Allow access to poddisruptionbudgets (needed for newer Bitnami Postgresql charts)
 - apiGroups:  ["policy"]
   resources: ["poddisruptionbudgets"]
