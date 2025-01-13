@@ -8,9 +8,8 @@ The [Ceph Container Storage Interface (CSI) driver](https://github.com/ceph/ceph
 
 ## Provisioning Dynamic CephFS Volumes
 
-Dynamic CephFS Volumes can be provisioned using the [csi-cephfs-sc storageclass](https://github.com/DataONEorg/k8s-cluster/blob/main/storage/Ceph/Ceph-CSI.md#ceph-csi-cephfs-dynamic-provisioning) on both K8s-prod and K8s-dev clusters.
+Dynamic CephFS Volumes can be provisioned using the [csi-cephfs-sc storageclass](./Ceph-CSI.md#ceph-csi-cephfs-dynamic-provisioning) on both K8s-prod and K8s-dev clusters.
 
- 
 Here is an example PVC `csi-cephfs-pvc-test-12.yaml` creating a dynamic CephFS volume:
 
 ```yaml
@@ -121,6 +120,71 @@ status:
   phase: Bound
 ```
 
+### Special Case: Provisioning *Ephemeral* Dynamic CephFS Volumes
+
+Ephemeral Volumes are temporary storage resources that are created and destroyed alongside their
+associated Pods. They provide a lightweight alternative to persistent volumes for applications that
+don't require data persistence across Pod lifecycles.
+
+> **NOTE: This means you will lose all the data! Use only where this is appropriate!**
+> e.g. caches, temp files, etc.
+
+They can be provisioned using the `csi-cephfs-sc-ephemeral` storageclass on both K8s-prod and
+K8s-dev clusters.
+
+Here is an example deployment `csi-cephfs-pvc-test-13.yaml` creating a dynamic Ephemeral CephFS volume:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: busybox
+  namespace: nick
+spec:
+  selector:
+    matchLabels:
+      app: busybox
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      containers:
+        - name: busybox
+          image: docker.io/busybox:1.29
+          args: [sh, -c, 'sleep 9999999999']
+          volumeMounts:
+            - name: cephfs-temp-cache-volume
+              mountPath: /tmp/temp-cache
+      volumes:
+        - name: cephfs-temp-cache-volume
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes: [ "ReadWriteOnce" ]
+                storageClassName: csi-cephfs-sc-ephemeral
+                resources:
+                  requests:
+                    storage: 1Gi
+```
+
+Create the deployment with the command:
+
+```console
+$ kubectl create -f csi-cephfs-pvc-test-13.yaml
+persistentvolumeclaim/csi-cephfs-pvc-test-12 created
+```
+
+Then check that is has been successfully provisioned:
+
+```console
+$ kubectl get pvc -n nick | grep ephemeral
+NAME                                              STATUS VOLUME                                    CAPACITY  ACCESS MODES  STORAGECLASS            AGE
+busybox-9fd666d6c-9kjd7-cephfs-temp-cache-volume  Bound  pvc-68f8da55-9934-433b-84a2-2a6b9df5c406  1Gi       RWO           csi-cephfs-sc-ephemeral 18s
+```
+Finally, delete the deployment (`kubectl delete deployment busybox`), and notice that the ephemeral
+PV and PVC both get cleaned up automatically.
 
 
 ## Provisioning Static CephFS Volumes
@@ -152,10 +216,10 @@ spec:
       namespace: ceph-csi-cephfs
     volumeAttributes:
       # Required options from storageclass parameters need to be added in volumeAttributes
-      "clusterID": "8aa4d4a0-a209-11ea-baf5-ffc787bfc812:
-      "fsName": "cephfs"
-      "staticVolume": "true"
-      "rootPath": /volumes/k8ssubvolgroup/k8ssubvol/af348873-2be8-4a99-b1c1-ed2c80fe098b
+      clusterID: 8aa4d4a0-a209-11ea-baf5-ffc787bfc812
+      fsName: cephfs
+      staticVolume: "true"
+      rootPath: /volumes/k8ssubvolgroup/k8ssubvol/af348873-2be8-4a99-b1c1-ed2c80fe098b
     # volumeHandle can be anything, need not to be same
     # as PV name or volume name. keeping same for brevity
     volumeHandle: cephfs-static-pv
@@ -279,7 +343,3 @@ mds_namespace=cephfs,_netdev] stderr: mount error: no mds server is up or the cl
 ```
 
 ...the message `no mds server is up or the cluster is laggy` is potentially misleading. It is more likely that the `userID` is missing or incorrect, in your `secret.yaml` file. See [Ceph CSI - Important Notes on Secrets and Credentials](./Ceph-CSI.md#important-notes-on-secrets-and-credentials).
-
-
-
-

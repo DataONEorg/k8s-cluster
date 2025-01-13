@@ -20,8 +20,19 @@ spec:
         volumeMounts:
           - name: cephfs-gnis-pv
             mountPath: /var/lib/www/html
+          - name: cephfs-temp-cache-volume
+            mountPath: /tmp/temp-cache
       volumes:
         - name: cephfs-gnis-pv
           persistentVolumeClaim:
             claimName: cephfs-gnis-pvc
             readOnly: false
+        - name: cephfs-temp-cache-volume
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes: [ "ReadWriteOnce" ]
+                storageClassName: csi-cephfs-sc-ephemeral
+                resources:
+                  requests:
+                    storage: 1Gi
