@@ -16,6 +16,8 @@ example:
 FROM ubuntu:18.04
 RUN apt-get update
 RUN apt-get install -y apache2
+# Connect this image to a GitHub repository
+LABEL org.opencontainers.image.source="https://github.com/dataoneorg/my-apache2"
 CMD ["apache2ctl", "-D", "FOREGROUND"]
 ```
 
@@ -72,13 +74,14 @@ Containers can be pushed to a container registry using the `docker push` command
   echo $PAT | docker login ghcr.io -u your-gh-username --password-stdin
   ```
 
-* **IMPORTANT:** before publishing, make sure you have tagged the image with the correct format:
-  `ghcr.io/<org>/<repo>:<version>`, to ensure that the image is associated with the correct target
-  repo. You can tag the image when you build it (using the `-t`,`--tag` command-line option - see
-  [Building a Docker Image example, above](#building-a-docker-image)), or after the fact using the
-  `docker tag` command; e.g:
-  ```shell
-  docker tag my-apache2:0.1.0 ghcr.io/dataone/my-apache2:0.1.0
+* **IMPORTANT:** before publishing, make sure you have labeled the image correctly, to ensure it
+  will be associated with the correct target repo when pushed to GHCR. This label should have been
+  included in the Dockerfile used to build the image - see [Building a Docker Image example,
+  above](#building-a-docker-image); i.e.:
+
+  ```Dockerfile
+  # Connect this image to a GitHub repository
+  LABEL org.opencontainers.image.source="https://github.com/dataoneorg/my-apache2"
   ```
 
 #### Push the image
@@ -86,6 +89,9 @@ Containers can be pushed to a container registry using the `docker push` command
 ```shell
 docker push ghcr.io/nceas/my-apache2:0.1.0
 ```
+* ⚠️ **NOTE**: whenever you publish a new image for the very first time, it may be necessary for a
+  GitHub admin to change its visibility from `Private` to `Public` in the package settings. This is
+  only a one-time requirement, and will not be necessary for subsequent pushes.
 
 ## Helm Charts: Packaging and Publishing to GHCR
 
@@ -112,15 +118,43 @@ helm package -u ./helm
 
 ### Publishing a Helm Chart to GHCR
 
-Helm charts can then be published to GHCR using the `helm push` command. Before pushing, you will
-need to create and log in with a personal access token (PAT), [as described above in the section on
-publishing docker images](#publishing-docker-images-to-the-github-container-registry-ghcr).
+Helm charts can then be published to GHCR using the `helm push` command.
 
+#### Prerequisites
+
+* Before pushing, you will need to create and log in with a personal access token (PAT), [as
+  described above in the section on publishing docker
+  images](#publishing-docker-images-to-the-github-container-registry-ghcr).
+
+* **IMPORTANT:** before publishing, make sure you have labeled the chart correctly, to ensure it
+  will be associated with the correct target repo when pushed to GHCR. This label should have been
+  included in the Chart.yaml (example for the dataone-indexer):
+
+  ```yaml
+  apiVersion: v2
+  name: my-apache2-app
+  description: |
+    Helm chart for Kubernetes Deployment of my-apache2-app
+
+  ## OCI Annotations - see https://github.com/helm/helm/pull/11204
+  ## This is the URL of the source code repository
+  ## and its presence ensures GHCR will associate the chart with the correct repo
+  ##
+  sources:
+  - https://github.com/dataoneorg/dataone-indexer
+
+  # ...etc
+  ```
+
+#### Publish the chart
 ```shell
 helm push <my-versioned-chart-name>.tgz oci://ghcr.io/dataoneorg/charts
 ```
 
-#### NOTES:
-- The `oci://` prefix is required to `helm push` to GHCR (i.e. differs from `docker push`).
-- The `/charts` path segment is a convention we are using across our repos and orgs to separate
-  charts from docker images within GHCR.
+⚠️ **IMPORTANT NOTES:**
+
+1. **Don't forget the `/charts` path segment!** It's a convention we are using across our repos and
+   orgs to separate charts from docker images within GHCR.
+2. Whenever you publish a new chart for the very first time, it may be necessary for a
+   GitHub admin to change its visibility from `Private` to `Public` in the package settings. This is
+   only a one-time requirement, and will not be necessary for subsequent pushes.
