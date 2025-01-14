@@ -13,6 +13,15 @@ Documentation is organized into an overview, and then separate config files and 
 - [Adding a Node](./admin/admin.md#Adding-a-node)
 - [Assigning Pods to Nodes](./admin/admin.md#Assigning-Pods-to-Nodes)
 
+## [Building and Deploying Docker Images and Helm Charts](./build-deploy/build-deploy.md)
+  - [Building A Docker Image](./build-deploy/build-deploy.md#building-a-docker-image)
+  - [Multi-Platform Builds](./build-deploy/build-deploy.md#multi-platform-builds)
+  - [Running a Container](./build-deploy/build-deploy.md#running-a-container)
+  - [Publishing Docker Images to the GitHub Container Registry (GHCR)](./build-deploy/build-deploy.md#publishing-docker-images-to-the-github-container-registry-ghcr)
+  - [Packaging a Helm Chart](./build-deploy/build-deploy.md#packaging-a-helm-chart)
+  - [Publishing a Helm Chart to GHCR](./build-deploy/build-deploy.md#publishing-a-helm-chart-to-ghcr)
+
+
 ## [Managing Let's Encrypt Certificates With cert-manager](/authentication/LetsEncrypt.md)
 - [Installing cert-manager](./authentication/LetsEncrypt.md#Installing-cert-manager)
 - [Configuring cert-manager](./authentication/LetsEncrypt.md#Configuring-cert-manager)
