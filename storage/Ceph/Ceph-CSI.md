@@ -15,7 +15,7 @@ Note that accessing RBD images with Ceph CSI currently does not allow multiple k
 
 Ceph CSI RBD helm installation information can be found [here](https://github.com/ceph/ceph-csi/blob/devel/charts/ceph-csi-rbd/README.md).
 
-Command line options to helm supply most of the information that is needed for the installation. Two items that need to be manually created and installed befor the helm installatin are the `secret.yaml`, and `csi-config-map.yaml` files.
+Command line options to helm supply most of the information that is needed for the installation. Two items that need to be manually created and installed before the helm installation are the `secret.yaml`, and `csi-config-map.yaml` files.
 
 Here is an example `csi-config-map.yaml` file:
 
@@ -71,7 +71,7 @@ $ sudo ceph -n client.k8s --keyring=/etc/ceph/ceph.client.k8s.keyring mon dump
 
 This example shows the required command for the DataONE k8s production only. Appropriate values must be substituted for the development cluster when installing there.
 
-The `secret.yaml` file contains the ceph storage cluster login credentials needed for ceph-csi to mount Ceph RBD images that are statically provisioned, or to create RBD images for dynamically provisioned voluems. For statically provisioned PVs, RBD images are created manually with the Linux `ceph` utility.
+The `secret.yaml` file contains the ceph storage cluster login credentials needed for ceph-csi to mount Ceph RBD images that are statically provisioned, or to create RBD images for dynamically provisioned volumes. For statically provisioned PVs, RBD images are created manually with the Linux `ceph` utility.
 
 The `userId` and `userKey` values provide the needed authorization for this. These values can be found in the /etc/ceph directory of the k8s control nodes.
 
@@ -84,8 +84,8 @@ metadata:
   namespace: ceph-csi-rbd
 stringData:
   # Required for statically provisioned volumes
-  userID: k8srbd
-  userKey: <user key from /etc/ceph>
+  userID: "k8srbd"
+  userKey: "<user key from /etc/ceph>"
 
   # Required for dynamically provisioned volumes
   #adminID: <plaintext ID>
@@ -186,8 +186,8 @@ metadata:
   namespace: ceph-csi-cephfs
 stringData:
   # Required for statically provisioned volumes
-  userID: k8ssubvoluser
-  userKey: <Ceph auth key corresponding to ID above from /etc/ceph>
+  userID: "k8ssubvoluser"
+  userKey: "<Ceph auth key corresponding to ID above from /etc/ceph>"
 ```
 
 Here is an example `csi-config-map.yaml` file:
@@ -210,7 +210,7 @@ kind: ConfigMap
 # The <rados-namespace> is optional and represents a radosNamespace in the pool.
 # If any given, all of the rbd images, snapshots, and other metadata will be
 # stored within the radosNamespace.
-# NOTE: The given radosNamespace must already exists in the pool.
+# NOTE: The given radosNamespace must already exist in the pool.
 # NOTE: Make sure you don't add radosNamespace option to a currently in use
 # configuration as it will cause issues.
 # The field "cephFS.subvolumeGroup" is optional and defaults to "csi".
@@ -316,7 +316,7 @@ allowVolumeExpansion: true
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  annotations:
+  annotations: {}
   name: csi-cephfs-sc
 mountOptions:
 - debug
