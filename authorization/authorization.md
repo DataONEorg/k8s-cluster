@@ -78,6 +78,18 @@ If an application needs to access resources at the cluster level, you can create
 similar to those for `Role` `RoleBinding`, above. However, copies of the yaml for each should be
 saved in the [custom-rolebindings](./custom-rolebindings) directory.
 
+## Client Setup
+
+From the user's perspective, the following initial setup is required upon receiving a copy of the kubectl configuration file:
+
+1. Decrypt the file(s), which should have arrived in gpg-encrypted form.
+2. Create a `~/.kube/` directory, move the file(s) into it, and `chmod 600` them, since they contain sensitive information.
+3. Set up a KUBECONFIG environment variable that contains the path(s) to any of these files in `~/.kube/`, by adding something like this to your `~/.zshrc` (or  `~/.zshenv`) file. For example:
+   ```shell
+   # (substitute your own filenames)
+   export KUBECONFIG="$HOME/.kube/config:$HOME/.kube/config-prod:$HOME/.kube/config-dev"
+   ```
+
 
 ## References
 
