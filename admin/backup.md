@@ -136,9 +136,17 @@ $ kubectl describe pod -n arctic metacatarctic-d1index-77945db995-g8qw9 | grep i
 
 $ kubectl describe pvc metacatarctic-metacat-metacatarctic-0 -n arctic
 
+# Exclude PVC
 $ kubectl label -n arctic pvc/metacatarctic-metacat-metacatarctic-0 velero.io/exclude-from-backup=true
-
 $ kubectl get -n arctic pvc/metacatarctic-metacat-metacatarctic-0 -o jsonpath='{.metadata.labels}'
+
+# Exclude PV
+$ kubectl describe pvc metacatarctic-metacat-metacatarctic-0 -n arctic | grep Volume:
+Volume:        cephfs-metacatarctic-metacat-varmetacat
+$ kubectl label -n arctic pv/cephfs-metacatarctic-metacat-varmetacat velero.io/exclude-from-backup=true
+persistentvolume/cephfs-metacatarctic-metacat-varmetacat labeled
+$ kubectl describe pv cephfs-metacatarctic-metacat-varmetacat | grep Labels:
+Labels:          velero.io/exclude-from-backup=true
 ```
 
 
