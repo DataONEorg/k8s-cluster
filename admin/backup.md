@@ -123,6 +123,24 @@ kubectl describe -n jones pvc cephfs-arctic-pvc
 # look for the pod names in "Used By:"
 ```
 
+```
+$ velero backup describe full-backup-20250206010007 --details
+...
+  Pod Volume Backups - kopia:
+    In Progress:
+      arctic/metacatarctic-d1index-77945db995-g8qw9: indexer-metacat-pv (3.41%)
+...
+
+$ kubectl describe pod -n arctic metacatarctic-d1index-77945db995-g8qw9 | grep indexer-metacat-pv -A 2 | grep ClaimName
+    ClaimName:  metacatarctic-metacat-metacatarctic-0
+
+$ kubectl describe pvc metacatarctic-metacat-metacatarctic-0 -n arctic
+
+$ kubectl label -n arctic pvc/metacatarctic-metacat-metacatarctic-0 velero.io/exclude-from-backup=true
+
+$ kubectl get -n arctic pvc/metacatarctic-metacat-metacatarctic-0 -o jsonpath='{.metadata.labels}'
+```
+
 
 ## Changing Install Options
 
