@@ -108,9 +108,16 @@ Add an annotation to exclude it from backups:
 kubectl -n YOUR_POD_NAMESPACE annotate pod/YOUR_POD_NAME backup.velero.io/backup-volumes-excludes=YOUR_VOLUME_NAME_1,YOUR_VOLUME_NAME_2,...
 ```
 
+Single exclusion:
 ```
 kubectl -n polder annotate pod/prod-gleaner-76df9dfc54-kkcgt backup.velero.io/backup-volumes-excludes=s3system-volume
 kubectl -n polder get pod/prod-gleaner-76df9dfc54-kkcgt -o jsonpath='{.metadata.annotations}'
+```
+
+Multiple exclusions:
+```
+kubectl -n arctic annotate pod/metacatarctic-d1index-77945db995-g8qw9 backup.velero.io/backup-volumes-excludes=indexer-metacat-pv,metacatarctic-temp-tripledb-volume
+kubectl -n arctic get pod/metacatarctic-d1index-77945db995-g8qw9 -o jsonpath='{.metadata.annotations}'
 ```
 
 https://velero.io/docs/v1.13/file-system-backup/#using-the-opt-out-approach
