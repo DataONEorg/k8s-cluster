@@ -167,6 +167,7 @@ Velero can be completely removed from k8s with the following commands. This may 
 kubectl delete namespace/velero clusterrolebinding/velero
 kubectl delete crds -l component=velero
 ```
+After reinstalling schedules and memory settings will need to be reconfigured.
 
 
 ### Modifying memory settings
