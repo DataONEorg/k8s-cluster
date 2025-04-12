@@ -10,12 +10,12 @@ We are using [Velero](https://velero.io) to backup our two K8s clusters (k8s and
 
 ### Run a full backup
 ```
-velero backup create backup-full-1
+velero backup create backup-full-1 --snapshot-move-data
 ```
 
 ### Run a backup of a namespace
 ```
-velero backup create hwitw-backup-1 --include-namespaces hwitw
+velero backup create hwitw-backup-1 --snapshot-move-data --include-namespaces hwitw
 ```
 
 ### Check on backups
@@ -23,11 +23,13 @@ velero backup create hwitw-backup-1 --include-namespaces hwitw
 velero backup get
 velero backup describe --details backup-full-1 
 velero backup logs backup-full-1
+kubectl -n velero get datauploads -l velero.io/backup-name=full-test-1 -o yaml
+kubectl -n velero logs deploy/velero
 ```
 
 ### Set an automatic backup schedule
 ```
-velero schedule create full-backup --schedule="0 3 * * *" --ttl 2160h0m0s
+velero schedule create full-backup --schedule="0 3 * * *" --ttl 2160h0m0s --snapshot-move-data
 ```
 
 
@@ -59,7 +61,7 @@ velero install \
 
 ### K8s-dev
 
-Velero 1.13.0 FSB install options (current):
+Velero 1.13.0 FSB install options (not in use):
 ```
 velero install \
   --provider aws \
@@ -73,11 +75,11 @@ velero install \
   --default-volumes-to-fs-backup
 ```
 
-Velero 1.13.0 CSI Snapshot install options (partially works, but does not back up PVC without a storage class):
+Velero 1.15.1 CSI Snapshot install options (current):
 ```
 velero install \
   --provider aws \
-  --plugins velero/velero-plugin-for-aws:v1.9.0,velero/velero-plugin-for-csi:v0.7.0 \
+  --plugins velero/velero-plugin-for-aws:v1.11.1 \
   --bucket k8s-dev \
   --secret-file /Users/outin/.aws/velero \
   --backup-location-config region=default,s3Url=https://s3.anacapa.nceas.ucsb.edu,s3ForcePathStyle=true \
@@ -89,6 +91,9 @@ velero install \
 
 
 ## Excluding volumes
+
+Only snapshots of dynamically provisioned CephFS volumes can be created and backed up. Manually provisioned volume backups are set up manually with Restic or rsync.
+
 We are using the `opt-out` approach to Velero FSB backups. Everything is backed up, unless excluded. Here is how to exclude volumes:
 
 Find the failed backup volume:
@@ -148,11 +153,9 @@ $ kubectl label -n arctic pvc/metacatarctic-metacat-metacatarctic-0 velero.io/ex
 $ kubectl get -n arctic pvc/metacatarctic-metacat-metacatarctic-0 -o jsonpath='{.metadata.labels}'
 
 # Exclude PV
-$ kubectl describe pvc metacatarctic-metacat-metacatarctic-0 -n arctic | grep Volume:
-Volume:        cephfs-metacatarctic-metacat-varmetacat
-$ kubectl label -n arctic pv/cephfs-metacatarctic-metacat-varmetacat velero.io/exclude-from-backup=true
-persistentvolume/cephfs-metacatarctic-metacat-varmetacat labeled
-$ kubectl describe pv cephfs-metacatarctic-metacat-varmetacat | grep Labels:
+$ kubectl label pv cephfs-repos-rom velero.io/exclude-from-backup=true
+persistentvolume/cephfs-repos-rom labeled
+$ kubectl describe pv cephfs-repos-rom | grep Labels:
 Labels:          velero.io/exclude-from-backup=true
 ```
 
