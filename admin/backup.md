@@ -75,11 +75,11 @@ velero install \
   --default-volumes-to-fs-backup
 ```
 
-Velero 1.15.1 CSI Snapshot install options (current):
+Velero 1.16.0 CSI Snapshot install options (current):
 ```
 velero install \
   --provider aws \
-  --plugins velero/velero-plugin-for-aws:v1.11.1 \
+  --plugins velero/velero-plugin-for-aws:v1.12.0 \
   --bucket k8s-dev \
   --secret-file /Users/outin/.aws/velero \
   --backup-location-config region=default,s3Url=https://s3.anacapa.nceas.ucsb.edu,s3ForcePathStyle=true \
