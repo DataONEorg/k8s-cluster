@@ -45,22 +45,22 @@ Velero is run from a location with access to both the K8s/K8s-dev admin credenti
 
 
 ### K8s-prod
-Velero 1.13.0 FSB install options (current):
+Velero 1.16.0 FSB install options:
 ```
 velero install \
   --provider aws \
-  --plugins velero/velero-plugin-for-aws:v1.9.0 \
+  --plugins velero/velero-plugin-for-aws:v1.12.0 \
   --bucket k8s-prod \
   --secret-file /Users/outin/.aws/minio-k8s-prod \
   --backup-location-config region=default,s3Url=https://s3.anacapa.nceas.ucsb.edu,s3ForcePathStyle=true \
+  --snapshot-location-config region=default \
   --use-node-agent \
-  --use-volume-snapshots=false \
-  --uploader-type=kopia \
-  --default-volumes-to-fs-backup
+  --use-volume-snapshots=true \
+  --features=EnableCSI
 ```
 
 ### K8s-dev
-Velero 1.16.0 CSI Snapshot install options (current):
+Velero 1.16.0 CSI Snapshot install options:
 ```
 velero install \
   --provider aws \
