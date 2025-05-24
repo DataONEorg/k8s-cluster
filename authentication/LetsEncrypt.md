@@ -51,6 +51,10 @@ This issuer will be used by cert-manager for any Ingress resource that has been 
 
 ## Configure and Deploy Ingress resource
 
+> [!NOTE]
+> if cert-manager doesn't seem to be working as expected, it could be due to rate limits applied by LetsEncrypt --
+> https://letsencrypt.org/docs/rate-limits/
+
 When a ClusterIssue has been added, cert-manager will scan all namespaces for Ingress resources that have been configured for that issuer. An annotation is added to the Ingress manifest that will signal cert-manager to obtain an LE cert for that Ingress. For example, the following Ingress `ingress-metadig.yaml`, has the 'letsencrypt-prod' annotation:
 
 ```
