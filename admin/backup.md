@@ -2,9 +2,9 @@
 ## Summary
 [Velero](https://velero.io) is used to backup our two K8s clusters (k8s and k8s-dev) to the Anacapa Ceph storage cluster via object storage to a MinIO server.
 
-We are using Velero volume snapshots (vs FSB) and the Opt-out approach for backing up K8s resources and dynamically created Ceph RBD and FS volumes. 
+We are using CSI volume snapshots and the Opt-out approach for backing up K8s resources and dynamically created Ceph RBD and FS volumes. 
 
-Manually created CephFS volumes are backed up via [Restic](https://github.nceas.ucsb.edu/NCEAS/Computing/blob/master/restic.md)
+Manually created CephFS volumes are not included in Velero backups and are backed up via [Restic](https://github.nceas.ucsb.edu/NCEAS/Computing/blob/master/restic.md)
 
 
 ## Operations
