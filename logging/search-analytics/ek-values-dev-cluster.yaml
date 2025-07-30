@@ -1,0 +1,58 @@
+## Example Value overrides for deploying the bitnami Elasticsearch + Kibana chart
+## (https://github.com/bitnami/charts/blob/main/bitnami/elasticsearch/README.md)
+## on the NCEAS dev cluster
+##
+##  $  helm install <myrelease> -n <namespace>      \
+##                  -f ek-values-dev-cluster.yaml   \
+##                  oci://registry-1.docker.io/bitnamicharts/elasticsearch
+##
+##  $  kubectl port-forward -n <namespace> svc/<release>-kibana 5601:5601
+##  (e.g:  kubectl port-forward -n brooke svc/elkbrooke-kibana 5601:5601 )
+##
+global:
+  ## Use a dynamically-created PV
+  storageClass: csi-rbd-sc
+
+  ## enable the Kibana subchart
+  kibanaEnabled: true
+
+  ## As of 8/25/25, Bitnami charges for secure container images, unless we use the "latest" tag.
+  ## As a stopgap, we reference the legacy images, which are still available for free (but note
+  ## that newer versions will not become available in the future, so we need to find an alternative
+  ## source for images...)
+  ## @param global.security.allowInsecureImages Allow non-bitnami-hardened images
+  security:
+    allowInsecureImages: true
+
+## As of 8/25/25, Bitnami charges for secure container images, unless we use the "latest" tag.
+## As a stopgap, we reference the legacy images, which are still available for free (but note
+## that newer versions will not become available in the future, so:
+## TODO: we need to find an alternative source for images...)
+## @param image.repository source repo for main image
+## @param sysctlImage.repository  source repo for sysctl image
+## @param volumePermissions.image.repository  source repo for volumePermissions image
+## @param metrics.image.repository  source repo for metrics image
+image:
+  repository: bitnamilegacy/elasticsearch
+  debug: true
+sysctlImage:
+  repository: bitnamilegacy/os-shell
+volumePermissions:
+  image:
+    repository: bitnamilegacy/os-shell
+metrics:
+  image:
+    repository: bitnamilegacy/elasticsearch-exporter
+
+kibana:
+  ## As of 8/25/25, Bitnami charges for secure container images, unless we use the "latest" tag.
+  ## As a stopgap, we reference the legacy images, which are still available for free (but note
+  ## that newer versions will not become available in the future, so:
+  ## TODO: we need to find an alternative source for images...)
+  ## @param kibana.image.repository source repo for main image
+  ## @param kibana.volumePermissions.image.repository  source repo for volumePermissions image
+  image:
+    repository: bitnamilegacy/kibana
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
