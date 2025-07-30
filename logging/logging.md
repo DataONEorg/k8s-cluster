@@ -18,7 +18,7 @@ application monitoring, and operational intelligence.
 ## Simple overview
 
 1. Our k8s applications log to stdout, and this output is collected on the host Node machine, 
-   under `/var/log/contianers/*.log`. (This is standard k8s functionality).
+   under `/var/log/containers/*.log`. (This is standard k8s functionality).
 2. We need to install logging agents that do 3 things:
     1. aggregate logs from each of the node machines
     2. parse and transform them into the required structured logging format
