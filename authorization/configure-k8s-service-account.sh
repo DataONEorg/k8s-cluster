@@ -66,7 +66,7 @@ create_service_account() {
       echo -e "\\n⚠️ service account ${SERVICE_ACCOUNT_NAME} already exists in namespace ${NAMESPACE};"
       echo "    SKIPPING creation of service account, secret, and kubeconfig file!"
       echo "    If you need these re-created, please delete the service account and try again;"
-      echo "    use: $ kubectl delete sa ${SERVICE_ACCOUNT} --namespace ${NAMESPACE}"
+      echo "    use: $ kubectl delete sa ${SERVICE_ACCOUNT_NAME} --namespace ${NAMESPACE}"
       skip_sa="true"
     fi
 }
@@ -172,5 +172,5 @@ fi
 apply_rbac
 
 echo -e "\\nAll done! Test with:"
-echo "KUBECONFIG=${TEST_CFG} kubectl get sa"
+echo "KUBECONFIG=${TEST_CFG} kubectl get sa -n ${NAMESPACE}"
 KUBECONFIG=${TEST_CFG} kubectl get sa
