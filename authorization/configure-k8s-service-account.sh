@@ -158,6 +158,7 @@ echo "Starting on ${TODAY}..."
 create_target_folder
 create_namespace
 skip_sa="false"
+TEST_CFG=${CONFIG}
 create_service_account
 if [[ "$skip_sa" != "true" ]] ; then
     create_sa_secret
@@ -166,9 +167,10 @@ if [[ "$skip_sa" != "true" ]] ; then
     get_user_token_from_secret
     set_kube_config_values
     flatten_config
+    TEST_CFG=${KUBECFG_FILE_NAME}
 fi
 apply_rbac
 
 echo -e "\\nAll done! Test with:"
-echo "KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get sa"
-KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get sa
+echo "KUBECONFIG=${TEST_CFG} kubectl get sa"
+KUBECONFIG=${TEST_CFG} kubectl get sa
