@@ -77,6 +77,8 @@ Documentation is organized into an overview, and then separate config files and 
   - [Persistent Volume Claim](./storage/Ceph/Ceph-CSI-RBD.md#Persistent-Volume-Claim)
   - [Using The Persistent Volume Claim](./storage/Ceph/Ceph-CSI-RBD.md#Using-The-Persistent-Volume-Claim)
 
+## [Logging Infrastructure](./logging/logging.md)
+
 ## [Data Recovery](./storage/data-recovery.md#Data-Recovery)
 - [Data Recovery For RBD Based PVs](./storage/data-recovery.md#Data-Recovery-For-RBD-Based-PVs)
 - [Data Recovery For CephFS Based PVs](./storage/data-recovery.md#Data-Recovery-For-CephFS-Based-PVs)
