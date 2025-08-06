@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script creates the authorization needed to run an app on the DataONE k8s cluster.
-# A k8s namespace, service account and kubectl context are createdi, and a default set of RBAC rules are applied.
+# A k8s namespace, service account and kubectl context are created, and a default set of RBAC rules are applied.
 set -e
 set -o pipefail
 
@@ -13,12 +13,29 @@ if [[ -z "$1" ]] ; then
 fi
 
 if [[ -z "$2" ]] ; then
- CLUSTER_TYPE="dev"
-else
- CLUSTER_TYPE=$2
+  CLUSTER_TYPE="dev"
+else 
+  CLUSTER_TYPE=$2
+fi
+
+# Must be run as admin in order to create all required resources!
+#
+[[ "$CLUSTER_TYPE" == "prod" ]] && ctx_expected="prod-k8s"
+[[ "$CLUSTER_TYPE" == "dev" ]] && ctx_expected="dev-k8s"
+
+if [[ -z "$ctx_expected" ]]; then
+  echo "❌ CLUSTER_TYPE must be 'prod' or 'dev'"; exit 1
 fi
 
 echo "Using CLUSTER_TYPE: ${CLUSTER_TYPE}"
+
+ctx=$(kubectl config current-context)
+
+if [[ "$ctx" != "$ctx_expected" ]] ; then
+  echo "❌ Wrong context (${ctx}). Must use $CLUSTER_TYPE admin context (${ctx_expected}) to run this script!"
+  exit 1
+fi
+
 SERVICE_ACCOUNT_NAME=$1
 NAMESPACE="$1"
 TARGET_FOLDER="${HOME}/.kube"
@@ -33,13 +50,25 @@ create_target_folder() {
 }
 
 create_namespace() {
-    echo -e "\\nCreating the namespace ${NAMESPACE}"
-    kubectl create namespace "${NAMESPACE}"
+    if [ $(kubectl get namespaces ${NAMESPACE} 2>&1 | grep -c "NotFound") -gt 0 ]; then
+      echo -e "\\nCreating the namespace ${NAMESPACE}"
+      kubectl create namespace "${NAMESPACE}"
+    else
+      echo -e "\\n⚠️ Namespace ${NAMESPACE} already exists, skipping creation."
+    fi
 }
 
 create_service_account() {
-    echo -e "\\nCreating a service account in ${NAMESPACE} namespace: ${SERVICE_ACCOUNT_NAME}"
-    kubectl create sa "${SERVICE_ACCOUNT_NAME}" --namespace "${NAMESPACE}" --save-config
+    if [ $(kubectl get sa --namespace ${NAMESPACE} | grep -c "${SERVICE_ACCOUNT_NAME}") -eq 0 ]; then
+        echo -e "\\nCreating a service account in ${NAMESPACE} namespace: ${SERVICE_ACCOUNT_NAME}"
+        kubectl create sa "${SERVICE_ACCOUNT_NAME}" --namespace "${NAMESPACE}" --save-config
+    else
+      echo -e "\\n⚠️ service account ${SERVICE_ACCOUNT_NAME} already exists in namespace ${NAMESPACE};"
+      echo "    SKIPPING creation of service account, secret, and kubeconfig file!"
+      echo "    If you need these re-created, please delete the service account and try again;"
+      echo "    use: $ kubectl delete sa ${SERVICE_ACCOUNT} --namespace ${NAMESPACE}"
+      skip_sa="true"
+    fi
 }
 
 create_sa_secret() {
@@ -121,22 +150,25 @@ flatten_config() {
 }
 
 apply_rbac() {
+    echo -e "\\nApplying RBAC rules for service account ${SERVICE_ACCOUNT_NAME} in namespace ${NAMESPACE}"
     cat application-context.yaml | SERVICE_ACCOUNT=${SERVICE_ACCOUNT_NAME} envsubst | kubectl apply -f -
 }
 
 echo "Starting on ${TODAY}..."
 create_target_folder
 create_namespace
+skip_sa="false"
 create_service_account
-create_sa_secret
-get_secret_name_from_service_account
-extract_ca_crt_from_secret
-get_user_token_from_secret
-set_kube_config_values
-flatten_config
+if [[ "$skip_sa" != "true" ]] ; then
+    create_sa_secret
+    get_secret_name_from_service_account
+    extract_ca_crt_from_secret
+    get_user_token_from_secret
+    set_kube_config_values
+    flatten_config
+fi
 apply_rbac
 
 echo -e "\\nAll done! Test with:"
 echo "KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get sa"
 KUBECONFIG=${KUBECFG_FILE_NAME} kubectl get sa
-
