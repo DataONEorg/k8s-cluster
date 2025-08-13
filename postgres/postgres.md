@@ -166,7 +166,7 @@ Use of the operator means definining and creating a postgres cluster for an appl
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: postgresql-cluster-example
+  name: keystore-pg
 spec:
   instances: 3
   storage:
@@ -177,10 +177,10 @@ spec:
 After applying that chart, it took a few minutes to come up, but then was operational quickly as seen in the `kubectl cnpg status keystore-pg` output:
 
 ```
-❯ kubectl apply -f postgres-cluster.yaml
+❯ kubectl apply -f postgres-cluster.yaml -n keycloak
 cluster.postgresql.cnpg.io/keystore-pg created
 
-❯ k8 cnpg status keystore-pg
+❯ k8 cnpg status keystore-pg -n keycloak
 Cluster Summary
 Name                 default/keystore-pg
 System ID:           7538142671149060124
@@ -216,8 +216,8 @@ keystore-pg-3  0/6000060    Standby (async)   OK      BestEffort  1.27.0        
 Once the cluster is up and running, it can be quickly deleted with:
 
 ```
-❯ k8 delete Cluster keystore-pg
+❯ k8 delete Cluster keystore-pg -n keycloak
 cluster.postgresql.cnpg.io "keystore-pg" deleted
 ```
 
-Shortly thereafter, CNPG takes down all of the runnign pods and services.
+Shortly thereafter, CNPG takes down all of the running pods and services.
