@@ -1,0 +1,223 @@
+# Postgres Operator
+
+We have installed the Postgres Operator from CloudNativePG to serve our persistent database needs.
+
+## Installation of the operator via default yaml
+
+First attempt to install the operator used:
+
+```bash
+kubectl apply --server-side -f \
+  https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.26/releases/cnpg-1.26.1.yaml
+```
+
+Got a timeout error:
+
+```
+namespace/cnpg-system serverside-applied
+customresourcedefinition.apiextensions.k8s.io/backups.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/clusterimagecatalogs.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/clusters.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/databases.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/imagecatalogs.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/publications.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/scheduledbackups.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/subscriptions.postgresql.cnpg.io serverside-applied
+serviceaccount/cnpg-manager serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-database-editor-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-database-viewer-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-manager serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-publication-editor-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-publication-viewer-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-subscription-editor-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-subscription-viewer-role serverside-applied
+clusterrolebinding.rbac.authorization.k8s.io/cnpg-manager-rolebinding serverside-applied
+configmap/cnpg-default-monitoring serverside-applied
+service/cnpg-webhook-service serverside-applied
+deployment.apps/cnpg-controller-manager serverside-applied
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cnpg-mutating-webhook-configuration serverside-applied
+validatingwebhookconfiguration.admissionregistration.k8s.io/cnpg-validating-webhook-configuration serverside-applied
+Error from server (Timeout): Timeout: request did not complete within requested timeout - context deadline exceeded
+```
+
+
+Here's what was installed and it's state:
+
+```
+❯ k8gn cnpg-system
+NAME                                DATA   AGE
+configmap/cnpg-default-monitoring   1      35m
+configmap/kube-root-ca.crt          1      36m
+NAME                             ENDPOINTS   AGE
+endpoints/cnpg-webhook-service               35m
+LAST SEEN   TYPE      REASON              OBJECT                                          MESSAGE
+35m         Normal    Scheduled           pod/cnpg-controller-manager-74d454fcb7-9mwvj    Successfully assigned cnpg-system/cnpg-controller-manager-74d454fcb7-9mwvj to k8s-dev-node-3
+34m         Normal    Pulling             pod/cnpg-controller-manager-74d454fcb7-9mwvj    Pulling image "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1"
+35m         Normal    Pulled              pod/cnpg-controller-manager-74d454fcb7-9mwvj    Successfully pulled image "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1" in 13.197323183s (13.197364585s including waiting)
+34m         Normal    Created             pod/cnpg-controller-manager-74d454fcb7-9mwvj    Created container manager
+34m         Normal    Started             pod/cnpg-controller-manager-74d454fcb7-9mwvj    Started container manager
+34m         Warning   Unhealthy           pod/cnpg-controller-manager-74d454fcb7-9mwvj    Startup probe failed: Get "https://192.168.73.215:9443/readyz": dial tcp 192.168.73.215:9443: connect: connection refused
+35m         Normal    Pulled              pod/cnpg-controller-manager-74d454fcb7-9mwvj    Successfully pulled image "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1" in 651.532155ms (651.567229ms including waiting)
+40s         Warning   BackOff             pod/cnpg-controller-manager-74d454fcb7-9mwvj    Back-off restarting failed container manager in pod cnpg-controller-manager-74d454fcb7-9mwvj_cnpg-system(022815d4-782a-4520-9abd-e5c81a125594)
+34m         Normal    Pulled              pod/cnpg-controller-manager-74d454fcb7-9mwvj    Successfully pulled image "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1" in 706.530068ms (706.578491ms including waiting)
+34m         Normal    Pulled              pod/cnpg-controller-manager-74d454fcb7-9mwvj    Successfully pulled image "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1" in 681.045257ms (681.092791ms including waiting)
+35m         Normal    SuccessfulCreate    replicaset/cnpg-controller-manager-74d454fcb7   Created pod: cnpg-controller-manager-74d454fcb7-9mwvj
+35m         Normal    ScalingReplicaSet   deployment/cnpg-controller-manager              Scaled up replica set cnpg-controller-manager-74d454fcb7 to 1
+NAME                                           READY   STATUS             RESTARTS         AGE
+pod/cnpg-controller-manager-74d454fcb7-9mwvj   0/1     CrashLoopBackOff   11 (3m17s ago)   35m
+NAME                       TYPE                DATA   AGE
+secret/cnpg-ca-secret      Opaque              2      35m
+secret/cnpg-webhook-cert   kubernetes.io/tls   2      35m
+NAME                          SECRETS   AGE
+serviceaccount/cnpg-manager   0         35m
+serviceaccount/default        0         37m
+NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/cnpg-webhook-service   ClusterIP   10.98.88.14   <none>        443/TCP   35m
+NAME                                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/cnpg-controller-manager   0/1     1            0           35m
+NAME                                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/cnpg-controller-manager-74d454fcb7   1         1         0       35m
+NAME                                                        ADDRESSTYPE   PORTS   ENDPOINTS        AGE
+endpointslice.discovery.k8s.io/cnpg-webhook-service-pjdjs   IPv4          9443    192.168.73.215   36m
+LAST SEEN   TYPE      REASON              OBJECT                                          MESSAGE
+36m         Normal    Scheduled           pod/cnpg-controller-manager-74d454fcb7-9mwvj    Successfully assigned cnpg-system/cnpg-controller-manager-74d454fcb7-9mwvj to k8s-dev-node-3
+34m         Normal    Pulling             pod/cnpg-controller-manager-74d454fcb7-9mwvj    Pulling image "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1"
+36m         Normal    Pulled              pod/cnpg-controller-manager-74d454fcb7-9mwvj    Successfully pulled image "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1" in 13.197323183s (13.197364585s including waiting)
+35m         Normal    Created             pod/cnpg-controller-manager-74d454fcb7-9mwvj    Created container manager
+35m         Normal    Started             pod/cnpg-controller-manager-74d454fcb7-9mwvj    Started container manager
+35m         Warning   Unhealthy           pod/cnpg-controller-manager-74d454fcb7-9mwvj    Startup probe failed: Get "https://192.168.73.215:9443/readyz": dial tcp 192.168.73.215:9443: connect: connection refused
+35m         Normal    Pulled              pod/cnpg-controller-manager-74d454fcb7-9mwvj    Successfully pulled image "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1" in 651.532155ms (651.567229ms including waiting)
+73s         Warning   BackOff             pod/cnpg-controller-manager-74d454fcb7-9mwvj    Back-off restarting failed container manager in pod cnpg-controller-manager-74d454fcb7-9mwvj_cnpg-system(022815d4-782a-4520-9abd-e5c81a125594)
+35m         Normal    Pulled              pod/cnpg-controller-manager-74d454fcb7-9mwvj    Successfully pulled image "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1" in 706.530068ms (706.578491ms including waiting)
+34m         Normal    Pulled              pod/cnpg-controller-manager-74d454fcb7-9mwvj    Successfully pulled image "ghcr.io/cloudnative-pg/cloudnative-pg:1.26.1" in 681.045257ms (681.092791ms including waiting)
+36m         Normal    SuccessfulCreate    replicaset/cnpg-controller-manager-74d454fcb7   Created pod: cnpg-controller-manager-74d454fcb7-9mwvj
+36m         Normal    ScalingReplicaSet   deployment/cnpg-controller-manager              Scaled up replica set cnpg-controller-manager-74d454fcb7 to 1
+```
+
+And note the main failure seems to be in `pod/cnpg-controller-manager-74d454fcb7-9mwvj`, which describe shows with the following error:
+
+```
+  Warning  Unhealthy  39m (x3 over 40m)    kubelet            Startup probe failed: Get "https://192.168.73.215:9443/readyz": dial tcp 192.168.73.215:9443: connect: connection refused
+```
+
+The logs for that pod indicate that it can't create a `Pooler` resource:
+
+```
+{"level":"error","ts":"2025-08-13T00:44:51.368571018Z","logger":"setup","msg":"unable to create controller","controller":"Cluster","error":"no matches for kind \"Pooler\" in v
+ersion \"postgresql.cnpg.io/v1\"","stacktrace":"github.com/cloudnative-pg/machinery/pkg/log.(*logger).Error\n\tpkg/mod/github.com/cloudnative-pg/machinery@v0.3.0/pkg/log/log.g
+o:125\ngithub.com/cloudnative-pg/cloudnative-pg/internal/cmd/manager/controller.RunController\n\tinternal/cmd/manager/controller/controller.go:231\ngithub.com/cloudnative-pg/c
+loudnative-pg/internal/cmd/manager/controller.NewCmd.func1\n\tinternal/cmd/manager/controller/cmd.go:46\ngithub.com/spf13/cobra.(*Command).execute\n\tpkg/mod/github.com/spf13/
+cobra@v1.9.1/command.go:1015\ngithub.com/spf13/cobra.(*Command).ExecuteC\n\tpkg/mod/github.com/spf13/cobra@v1.9.1/command.go:1148\ngithub.com/spf13/cobra.(*Command).Execute\n\
+tpkg/mod/github.com/spf13/cobra@v1.9.1/command.go:1071\nmain.main\n\tcmd/manager/main.go:71\nruntime.main\n\t/opt/hostedtoolcache/go/1.24.5/x64/src/runtime/proc.go:283"}
+```
+
+**Deleted everything from the `cnpg-system` namespace to start again.**
+
+Alternatives include using the cnpg plugin for kubectl or the helm chart (which seems to be in development).
+
+## Install using `kubectl cnpg`
+
+Try generating custom manifests, and then apply them:
+
+```
+kubectl cnpg install generate --help
+kubectl cnpg install generate > cnpg-operator.yaml
+kubectl apply -f cnpg-operator.yaml
+```
+
+This resulted in a number of errors because of conflicts between the client-side and servoer-side management of objects, so I retried with `--server-side --force-conflicts` to at least run through the whole `apply` successfully.
+
+```
+❯ kubectl apply -f cnpg-operator.yaml --server-side --force-conflicts
+namespace/cnpg-system serverside-applied
+customresourcedefinition.apiextensions.k8s.io/backups.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/clusterimagecatalogs.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/clusters.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/databases.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/failoverquorums.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/imagecatalogs.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/poolers.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/publications.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/scheduledbackups.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/subscriptions.postgresql.cnpg.io serverside-applied
+serviceaccount/cnpg-manager serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-database-editor-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-database-viewer-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-manager serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-publication-editor-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-publication-viewer-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-subscription-editor-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-subscription-viewer-role serverside-applied
+clusterrolebinding.rbac.authorization.k8s.io/cnpg-manager-rolebinding serverside-applied
+configmap/cnpg-default-monitoring serverside-applied
+service/cnpg-webhook-service serverside-applied
+deployment.apps/cnpg-controller-manager serverside-applied
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cnpg-mutating-webhook-configuration serverside-applied
+validatingwebhookconfiguration.admissionregistration.k8s.io/cnpg-validating-webhook-configuration serverside-applied
+```
+
+Now, the `cnpg-controller-manager-7fffcb6d86-6hphr` pod seems to have started and is running successfully.
+
+## Use of the operator
+
+Use of the operator means definining and creating a postgres cluster for an application, which CNPG picks up and creates for us. Attempting to create with a yaml like this, using either `csi-cephfs-sc-ephemeral` for testing or `csi-cephfs-sc` for a production storage class:
+
+```yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql-cluster-example
+spec:
+  instances: 3
+  storage:
+    storageClass: csi-cephfs-sc
+    size: 5Gi
+```
+
+After applying that chart, it took a few minutes to come up, but then was operational quickly as seen in the `kubectl cnpg status keystore-pg` output:
+
+```
+❯ kubectl apply -f postgres-cluster.yaml
+cluster.postgresql.cnpg.io/keystore-pg created
+
+❯ k8 cnpg status keystore-pg
+Cluster Summary
+Name                 default/keystore-pg
+System ID:           7538142671149060124
+PostgreSQL Image:    ghcr.io/cloudnative-pg/postgresql:17.5
+Primary instance:    keystore-pg-1
+Primary start time:  2025-08-13 18:43:51 +0000 UTC (uptime 2m51s)
+Status:              Cluster in healthy state
+Instances:           3
+Ready instances:     3
+Size:                126M
+Current Write LSN:   0/6000060 (Timeline: 1 - WAL File: 000000010000000000000006)
+
+Continuous Backup status
+Not configured
+
+Streaming Replication status
+Replication Slots Enabled
+Name           Sent LSN   Write LSN  Flush LSN  Replay LSN  Write Lag  Flush Lag  Replay Lag  State      Sync State  Sync Priority  Replication Slot
+----           --------   ---------  ---------  ----------  ---------  ---------  ----------  -----      ----------  -------------  ----------------
+keystore-pg-2  0/6000060  0/6000060  0/6000060  0/6000060   00:00:00   00:00:00   00:00:00    streaming  async       0              active
+keystore-pg-3  0/6000060  0/6000060  0/6000060  0/6000060   00:00:00   00:00:00   00:00:00    streaming  async       0              active
+
+Instances status
+Name           Current LSN  Replication role  Status  QoS         Manager Version  Node
+----           -----------  ----------------  ------  ---         ---------------  ----
+keystore-pg-1  0/6000060    Primary           OK      BestEffort  1.27.0           k8s-dev-node-3
+keystore-pg-2  0/6000060    Standby (async)   OK      BestEffort  1.27.0           k8s-dev-node-1
+keystore-pg-3  0/6000060    Standby (async)   OK      BestEffort  1.27.0           k8s-dev-node-2
+```
+
+## Deleting a cluster
+
+Once the cluster is up and running, it can be quickly deleted with:
+
+```
+❯ k8 delete Cluster keystore-pg
+cluster.postgresql.cnpg.io "keystore-pg" deleted
+```
+
+Shortly thereafter, CNPG takes down all of the runnign pods and services.
