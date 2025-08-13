@@ -221,3 +221,34 @@ cluster.postgresql.cnpg.io "keystore-pg" deleted
 ```
 
 Shortly thereafter, CNPG takes down all of the running pods and services.
+
+## Accessing the cluster
+
+Assuming we didn't delete the cluster above, it can be accessed using `psql` by exec'ing into the cluster pods, or via postgres database connections on port 5432 to the services that were created. Here's an example of accessing the pod via psql:
+
+```sh
+kubectl -n keycloak exec -it keycloak-pg-1 -- psql
+Defaulted container "postgres" out of: postgres, bootstrap-controller (init)
+psql (17.5 (Debian 17.5-1.pgdg110+1))
+Type "help" for help.
+
+postgres=# \l
+                                                List of databases
+   Name    |  Owner   | Encoding | Locale Provider | Collate | Ctype | Locale | ICU Rules |   Access privileges
+-----------+----------+----------+-----------------+---------+-------+--------+-----------+-----------------------
+ app       | app      | UTF8     | libc            | C       | C     |        |           |
+ postgres  | postgres | UTF8     | libc            | C       | C     |        |           |
+ template0 | postgres | UTF8     | libc            | C       | C     |        |           | =c/postgres          +
+           |          |          |                 |         |       |        |           | postgres=CTc/postgres
+ template1 | postgres | UTF8     | libc            | C       | C     |        |           | =c/postgres          +
+           |          |          |                 |         |       |        |           | postgres=CTc/postgres
+(4 rows)
+
+postgres=# \c app
+You are now connected to database "app" as user "postgres".
+app=# \d
+Did not find any relations.
+```
+
+Note that the login is to the `postgres` admin user and database, and that CNPG created a default `app` database. More configuration is needed to control the name and type of the databses created on startup.
+
