@@ -313,3 +313,52 @@ postgres=# \l
  template1 | postgres | UTF8     | icu             | en_US.UTF-8 | en_US.UTF-8 | en-US  |           | =c/postgres          +
            |          |          |                 |             |             |        |           | postgres=CTc/postgres
 ```
+
+## Connect to the database
+
+Once the database is up and running, you can connect to one of the services from within the cluster, using standard cluster DNS names.
+
+The services you may want to connect to include `rw`, `ro`, and `r` instances. For example, for keycloak, these are:
+
+- `keycloak-pg-rw`: primary instance of the cluster (read/write)
+- `keycloak-pg-ro`: secondary replica instance (read-only)
+- `keycloak-pg-r`:  other read replicas of the cluster (read-only)
+
+From outside of the cluster, you can port forward port 5432 to one of these services and access it locally:
+
+```sh
+# First Port-forward in another terminal using:
+#   k8 -n keycloak port-forward service/keycloak-pg-rw 5432:5432
+❯ psql -h localhost -U keycloak
+Password for user keycloak:
+psql (14.17 (Homebrew), server 17.5 (Debian 17.5-1.pgdg110+1))
+WARNING: psql major version 14, server major version 17.
+         Some psql features might not work.
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
+Type "help" for help.
+
+keycloak=> \d
+Did not find any relations.
+```
+
+## Database backups
+
+CloudNativePG now supports both [hot and cold backups](https://cloudnative-pg.io/documentation/1.27/backup/). For hot backups, it supports both a CNGP-I plugin to use external backup systems like Barman to backup to an object store, or CSI Volume snapshots.  For this initial use case, it is simplest to focus on [volume snapshots](https://cloudnative-pg.io/documentation/1.27/appendixes/backup_volumesnapshot/) for the backup and WAL files. By default, the backup uses online hot snapshots, which should work great for us. Once a backup has been completed, we will need to work to be sure the volume snapshot is preserved for an appropriate retention time.
+
+Because backups can be intensive, we can request that backups be made against a replica service rather than the primary, which reduces load on the rw service.
+
+Configuration involves providing an instance of the `ScheduledBackup` resource. A typical configuration might look like this:
+
+```
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: keycloak-pg-backup
+spec:
+  schedule: "0 0 0 * * *"  # At midnight every day
+  backupOwnerReference: self
+  cluster:
+    name: keycloak-pg
+  method: volumeSnapshot
+```
+
