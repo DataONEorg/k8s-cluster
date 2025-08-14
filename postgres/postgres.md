@@ -252,3 +252,45 @@ Did not find any relations.
 
 Note that the login is to the `postgres` admin user and database, and that CNPG created a default `app` database. More configuration is needed to control the name and type of the databses created on startup.
 
+## Create database with initdb bootstrap
+
+We can also set various database options for naming the application database and role, as well as database creation options. 
+Below we add configuration to enable `initdb` to bootstrap a specific `keycloak` database and role. This required creating a `basic-auth` secret rather than an `Opaque` secret. See https://kubernetes.io/docs/concepts/configuration/secret/#basic-authentication-secret and https://cloudnative-pg.io/documentation/1.27/bootstrap/#bootstrap-an-empty-cluster-initdb
+
+First the secret needs to be created. the `username` and `password` keys are required, but others can be added as well. Like all secrets, `data` keys are set to base64-encoded strings.
+
+```
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/basic-auth
+metadata:
+  name: keycloak-pg
+data:
+  username: a2V5Y2xvYWs=
+  password: c29tZV9zZWN1cmVfcHdfNF9zdXJl
+```
+
+Once that secret is in place, create the cluster with:
+
+```
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: keycloak-pg
+spec:
+  instances: 3
+  bootstrap:
+    initdb:
+      database: keycloak
+      owner: keycloak
+      secret:
+        name: keycloak-pg
+      encoding: UTF8
+      localeProvider: icu
+      icuLocale: en_US
+      localeCType: en_US.UTF-8
+      localeCollate: en_US.UTF-8
+  storage:
+    storageClass: csi-cephfs-sc
+    size: 5Gi
+```
