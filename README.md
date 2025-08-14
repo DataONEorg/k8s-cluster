@@ -47,6 +47,8 @@ Documentation is organized into an overview, and then separate config files and 
 - [Physical network](./network/network.md#Physical-network)
 - [Kubernetes Overlay network with Calico](./network/network.md#Kubernetes-Overlay-network-with-Calico)
 
+## [CloudNativePG Postgres Clusters](./postgres/postgres.md)
+
 ## [Storage Provisioning](./storage/storage.md)
 - [Persistent Disk Storage For Applications](./storage/storage.md#Persistent-Disk-Storage-For-Applications)
   - [Persistent Volumes](./storage/storage.md#Persistent-Volumes)
