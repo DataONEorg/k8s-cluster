@@ -125,7 +125,7 @@ kubectl cnpg install generate > cnpg-operator.yaml
 kubectl apply -f cnpg-operator.yaml
 ```
 
-This resulted in a number of errors because of conflicts between the client-side and servoer-side management of objects, so I retried with `--server-side --force-conflicts` to at least run through the whole `apply` successfully.
+This resulted in a number of errors because of conflicts between the client-side and server-side management of objects, so I retried with `--server-side --force-conflicts` to at least run through the whole `apply` successfully.
 
 ```
 ❯ kubectl apply -f cnpg-operator.yaml --server-side --force-conflicts
@@ -156,7 +156,7 @@ mutatingwebhookconfiguration.admissionregistration.k8s.io/cnpg-mutating-webhook-
 validatingwebhookconfiguration.admissionregistration.k8s.io/cnpg-validating-webhook-configuration serverside-applied
 ```
 
-Now, the `cnpg-controller-manager-7fffcb6d86-6hphr` pod seems to have started and is running successfully.
+Now, the `cnpg-controller-manager-7fffcb6d86-6hphr` pod seems to have started and is running successfully. Because CNPG 1.27.0 was released the day I was doing all of this, I also now see that the successful install via `kubectl cnpg` was for version 1.27.0, whereas the failure was for version 1.26.1, so that could have been the difference.
 
 ## Use of the operator
 
