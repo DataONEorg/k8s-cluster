@@ -294,3 +294,22 @@ spec:
     storageClass: csi-cephfs-sc
     size: 5Gi
 ```
+
+Now the database is named `keycloak` and other DB options have been set:
+
+```
+❯ k8 cnpg psql keycloak-pg -n keycloak
+psql (17.5 (Debian 17.5-1.pgdg110+1))
+Type "help" for help.
+
+postgres=# \l
+                                                     List of databases
+   Name    |  Owner   | Encoding | Locale Provider |   Collate   |    Ctype    | Locale | ICU Rules |   Access privileges
+-----------+----------+----------+-----------------+-------------+-------------+--------+-----------+-----------------------
+ keycloak  | keycloak | UTF8     | icu             | en_US.UTF-8 | en_US.UTF-8 | en-US  |           |
+ postgres  | postgres | UTF8     | icu             | en_US.UTF-8 | en_US.UTF-8 | en-US  |           |
+ template0 | postgres | UTF8     | icu             | en_US.UTF-8 | en_US.UTF-8 | en-US  |           | =c/postgres          +
+           |          |          |                 |             |             |        |           | postgres=CTc/postgres
+ template1 | postgres | UTF8     | icu             | en_US.UTF-8 | en_US.UTF-8 | en-US  |           | =c/postgres          +
+           |          |          |                 |             |             |        |           | postgres=CTc/postgres
+```
