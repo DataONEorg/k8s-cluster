@@ -1,18 +1,19 @@
 # Postgres Operator
 
-We have installed the Postgres Operator from [CloudNativePG](https://cloudnative-pg.io/) to serve our persistent database needs.
+We have installed the Postgres Operator from [CloudNativePG](https://cloudnative-pg.io/) to serve our persistent database needs. The CloundNativePG operator provides a convenient set of custom resources for creating a postgres `Cluster` that is replicated and easily backed up. Each deployed `Cluster` is tied to a single version of Postgres through a `ClusterImageCatalog`. No-downtime [Rolling Upgrades](https://cloudnative-pg.io/documentation/1.27/rolling_update/) from one minor postgres version to another are enabled, and the operator also supports [major version upgrades](https://cloudnative-pg.io/documentation/1.27/logical_replication/) (e.g., 16 to 17) through logical replication across clusters each running different versions.
 
 ## Installation of the operator 
 
-My first attempt to install the operator used the operator manifest directly from github, which gave an error on version 1.26.1.  Alternatives include using the `kubectl cnpg` plugin to generate a customize mannifest to be applied, or using the helm chart (which seems to be in development). I chose to apply the manifest directly, as follows:
+My first attempt to install the operator used the operator manifest directly from github, which gave an error on version 1.26.1.  Alternatives include using the `kubectl cnpg` plugin to generate a customize mannifest to be applied (and which can be customized), or using the helm chart (which seems to be in development). You can install the plugin on Mac using `brew install kubectl-cnpg`, which is a useful plugin for managing clusters. At a later date we may wnat to reconsider the helm chart, but it does not seem to be the standard route today.
 
-Try generating custom manifests, and then apply them:
+First, use `kubectl cnpg` for generating custom manifests:
 
 ```sh
 kubectl cnpg install generate --help
 kubectl cnpg install generate > cnpg-operator.yaml
-kubectl apply -f cnpg-operator.yaml --server-side
 ```
+
+And then apply them, being sure to use the `--server-side` flag.
 
 ```
 ❯ kubectl apply -f cnpg-operator.yaml --server-side --force-conflicts
