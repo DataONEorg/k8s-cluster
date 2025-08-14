@@ -48,6 +48,10 @@ Documentation is organized into an overview, and then separate config files and 
 - [Kubernetes Overlay network with Calico](./network/network.md#Kubernetes-Overlay-network-with-Calico)
 
 ## [CloudNativePG Postgres Clusters](./postgres/postgres.md)
+- [Create a Cluster](./postgres/postgres.md#create-database-with-initdb-bootstrap)
+- [Delete a Cluster](./postgres/postgres.md#deleting-a-cluster)
+- [Access a Cluster](./postgres/postgres.md#connect-to-the-database)
+- [Backup a Cluster](./postgres/postgres.md#database-backups)
 
 ## [Storage Provisioning](./storage/storage.md)
 - [Persistent Disk Storage For Applications](./storage/storage.md#Persistent-Disk-Storage-For-Applications)
