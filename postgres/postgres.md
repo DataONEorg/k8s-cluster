@@ -2,52 +2,6 @@
 
 We have installed the Postgres Operator from [CloudNativePG](https://cloudnative-pg.io/) to serve our persistent database needs. The CloundNativePG operator provides a convenient set of custom resources for creating a postgres `Cluster` that is replicated and easily backed up. Each deployed `Cluster` is tied to a single version of Postgres through a `ClusterImageCatalog`. No-downtime [Rolling Upgrades](https://cloudnative-pg.io/documentation/1.27/rolling_update/) from one minor postgres version to another are enabled, and the operator also supports [major version upgrades](https://cloudnative-pg.io/documentation/1.27/logical_replication/) (e.g., 16 to 17) through logical replication across clusters each running different versions.
 
-## Installation of the operator 
-
-My first attempt to install the operator used the operator manifest directly from github, which gave an error on version 1.26.1.  Alternatives include using the `kubectl cnpg` plugin to generate a customize mannifest to be applied (and which can be customized), or using the helm chart (which seems to be in development). You can install the plugin on Mac using `brew install kubectl-cnpg`, which is a useful plugin for managing clusters. At a later date we may wnat to reconsider the helm chart, but it does not seem to be the standard route today.
-
-First, use `kubectl cnpg` for generating custom manifests:
-
-```sh
-kubectl cnpg install generate --help
-kubectl cnpg install generate > cnpg-operator.yaml
-```
-
-And then apply them, being sure to use the `--server-side` flag.
-
-```
-❯ kubectl apply -f cnpg-operator.yaml --server-side --force-conflicts
-namespace/cnpg-system serverside-applied
-customresourcedefinition.apiextensions.k8s.io/backups.postgresql.cnpg.io serverside-applied
-customresourcedefinition.apiextensions.k8s.io/clusterimagecatalogs.postgresql.cnpg.io serverside-applied
-customresourcedefinition.apiextensions.k8s.io/clusters.postgresql.cnpg.io serverside-applied
-customresourcedefinition.apiextensions.k8s.io/databases.postgresql.cnpg.io serverside-applied
-customresourcedefinition.apiextensions.k8s.io/failoverquorums.postgresql.cnpg.io serverside-applied
-customresourcedefinition.apiextensions.k8s.io/imagecatalogs.postgresql.cnpg.io serverside-applied
-customresourcedefinition.apiextensions.k8s.io/poolers.postgresql.cnpg.io serverside-applied
-customresourcedefinition.apiextensions.k8s.io/publications.postgresql.cnpg.io serverside-applied
-customresourcedefinition.apiextensions.k8s.io/scheduledbackups.postgresql.cnpg.io serverside-applied
-customresourcedefinition.apiextensions.k8s.io/subscriptions.postgresql.cnpg.io serverside-applied
-serviceaccount/cnpg-manager serverside-applied
-clusterrole.rbac.authorization.k8s.io/cnpg-database-editor-role serverside-applied
-clusterrole.rbac.authorization.k8s.io/cnpg-database-viewer-role serverside-applied
-clusterrole.rbac.authorization.k8s.io/cnpg-manager serverside-applied
-clusterrole.rbac.authorization.k8s.io/cnpg-publication-editor-role serverside-applied
-clusterrole.rbac.authorization.k8s.io/cnpg-publication-viewer-role serverside-applied
-clusterrole.rbac.authorization.k8s.io/cnpg-subscription-editor-role serverside-applied
-clusterrole.rbac.authorization.k8s.io/cnpg-subscription-viewer-role serverside-applied
-clusterrolebinding.rbac.authorization.k8s.io/cnpg-manager-rolebinding serverside-applied
-configmap/cnpg-default-monitoring serverside-applied
-service/cnpg-webhook-service serverside-applied
-deployment.apps/cnpg-controller-manager serverside-applied
-mutatingwebhookconfiguration.admissionregistration.k8s.io/cnpg-mutating-webhook-configuration serverside-applied
-validatingwebhookconfiguration.admissionregistration.k8s.io/cnpg-validating-webhook-configuration serverside-applied
-```
-
-Note that my initial install did not use the `--server-side` flag, and resulted in a number of errors because of conflicts between the client-side and server-side management of objects, so I retried with `--server-side --force-conflicts` to run through the whole `apply` successfully.
-
-Now, the `cnpg-controller-manager` pod seems has started and is running successfully. Because CNPG 1.27.0 was released the day I was doing all of this, I also now see that the successful install via `kubectl cnpg` was for version 1.27.0, whereas the failure was for version 1.26.1, so that could have been the difference.
-
 ## Use of the operator
 
 Use of the operator means definining and creating a postgres cluster for an application, which CNPG picks up and creates for us. Attempting to create with a yaml like this, using either `csi-cephfs-sc-ephemeral` for testing or `csi-cephfs-sc` for a production storage class:
@@ -252,7 +206,55 @@ spec:
   method: volumeSnapshot
 ```
 
-## CloudNativePG Upgrades
+## CloudNativePG Operator Installation
+
+The operator is only installed once on a Kubernetes cluster, and can be used by all applications to deploy Postgres as described above.
+
+My first attempt to install the operator used the operator manifest directly from github, which gave an error on version 1.26.1.  Alternatives include using the `kubectl cnpg` plugin to generate a customize mannifest to be applied (and which can be customized), or using the helm chart (which seems to be in development). You can install the plugin on Mac using `brew install kubectl-cnpg`, which is a useful plugin for managing clusters. At a later date we may wnat to reconsider the helm chart, but it does not seem to be the standard route today.
+
+First, use `kubectl cnpg` for generating custom manifests:
+
+```sh
+kubectl cnpg install generate --help
+kubectl cnpg install generate > cnpg-operator.yaml
+```
+
+And then apply them, being sure to use the `--server-side` flag.
+
+```
+❯ kubectl apply -f cnpg-operator.yaml --server-side --force-conflicts
+namespace/cnpg-system serverside-applied
+customresourcedefinition.apiextensions.k8s.io/backups.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/clusterimagecatalogs.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/clusters.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/databases.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/failoverquorums.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/imagecatalogs.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/poolers.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/publications.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/scheduledbackups.postgresql.cnpg.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/subscriptions.postgresql.cnpg.io serverside-applied
+serviceaccount/cnpg-manager serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-database-editor-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-database-viewer-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-manager serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-publication-editor-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-publication-viewer-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-subscription-editor-role serverside-applied
+clusterrole.rbac.authorization.k8s.io/cnpg-subscription-viewer-role serverside-applied
+clusterrolebinding.rbac.authorization.k8s.io/cnpg-manager-rolebinding serverside-applied
+configmap/cnpg-default-monitoring serverside-applied
+service/cnpg-webhook-service serverside-applied
+deployment.apps/cnpg-controller-manager serverside-applied
+mutatingwebhookconfiguration.admissionregistration.k8s.io/cnpg-mutating-webhook-configuration serverside-applied
+validatingwebhookconfiguration.admissionregistration.k8s.io/cnpg-validating-webhook-configuration serverside-applied
+```
+
+Note that my initial install did not use the `--server-side` flag, and resulted in a number of errors because of conflicts between the client-side and server-side management of objects, so I retried with `--server-side --force-conflicts` to run through the whole `apply` successfully.
+
+Now, the `cnpg-controller-manager` pod seems has started and is running successfully. Because CNPG 1.27.0 was released the day I was doing all of this, I also now see that the successful install via `kubectl cnpg` was for version 1.27.0, whereas the failure was for version 1.26.1, so that could have been the difference.
+
+## CloudNativePG Operator Upgrades
 
 CloudNativePG releases new versions of the operator roughly monthly, and recommends [monthly upgrades](https://cloudnative-pg.io/documentation/1.27/installation_upgrade/#upgrades). The current operator suppors their `v1` API, and they state that these should be backwards compatible. They highly recommend upgrading to the current version monthly, and applying each upgrade in the order in which they are released (don't skip versions). When upgrading, the process involves two steps:
 
