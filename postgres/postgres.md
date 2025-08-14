@@ -1,6 +1,6 @@
 # Postgres Operator
 
-We have installed the Postgres Operator from CloudNativePG to serve our persistent database needs.
+We have installed the Postgres Operator from [CloudNativePG](https://cloudnative-pg.io/) to serve our persistent database needs.
 
 ## Installation of the operator via default yaml
 
