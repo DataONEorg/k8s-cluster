@@ -79,89 +79,89 @@ rules:
   - update
   - watch
 - apiGroups:
-    - postgresql.cnpg.io
+  - postgresql.cnpg.io
   resources:
-    - backups
+  - backups
   verbs:
-    - list
-    - get
-    - delete
+  - list
+  - get
+  - delete
 - apiGroups:
-    - postgresql.cnpg.io
+  - postgresql.cnpg.io
   resources:
-    - backups/status
+  - backups/status
   verbs:
-    - get
-    - patch
-    - update
+  - get
+  - patch
+  - update
 - apiGroups:
-    - postgresql.cnpg.io
+  - postgresql.cnpg.io
   resources:
-    - databases
+  - databases
   verbs:
-    - get
-    - update
-    - list
-    - watch
+  - get
+  - update
+  - list
+  - watch
 - apiGroups:
-    - postgresql.cnpg.io
+  - postgresql.cnpg.io
   resources:
-    - databases/status
+  - databases/status
   verbs:
-    - get
-    - patch
-    - update
+  - get
+  - patch
+  - update
 - apiGroups:
-    - postgresql.cnpg.io
+  - postgresql.cnpg.io
   resources:
-    - publications
+  - publications
   verbs:
-    - get
-    - update
-    - list
-    - watch
+  - get
+  - update
+  - list
+  - watch
 - apiGroups:
-    - postgresql.cnpg.io
+  - postgresql.cnpg.io
   resources:
-    - publications/status
+  - publications/status
   verbs:
-    - get
-    - patch
-    - update
+  - get
+  - patch
+  - update
 - apiGroups:
-    - postgresql.cnpg.io
+  - postgresql.cnpg.io
   resources:
-    - subscriptions
+  - subscriptions
   verbs:
-    - get
-    - update
-    - list
-    - watch
+  - get
+  - update
+  - list
+  - watch
 - apiGroups:
-    - postgresql.cnpg.io
+  - postgresql.cnpg.io
   resources:
-    - subscriptions/status
+  - subscriptions/status
   verbs:
-    - get
-    - patch
-    - update
+  - get
+  - patch
+  - update
 - apiGroups:
-    - postgresql.cnpg.io
+  - postgresql.cnpg.io
   resources:
-    - failoverquorums
+  - failoverquorums
   verbs:
-    - get
-    - list
-    - watch
+  - get
+  - list
+  - watch
 - apiGroups:
-    - postgresql.cnpg.io
+  - postgresql.cnpg.io
   resources:
-    - failoverquorums/status
+  - failoverquorums/status
   verbs:
-    - get
-    - patch
-    - update
-    - watch
+  - get
+  - patch
+  - update
+  - watch
 
 ---
 # This role binding allows the SA to edit CNPG Clusters. The namespace of the RoleBinding determines
