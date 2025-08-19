@@ -1,23 +1,20 @@
 ---
-# This Role and Rolebinding example gives all permissions to the '${SERVICE_ACCOUNT}' Service account,
+# This Role and RoleBinding gives all permissions to the '${SERVICE_ACCOUNT}' Service account,
 # but limited to only the '${SERVICE_ACCOUNT}' namespace.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  #name: mynamespace-user
   name: ${SERVICE_ACCOUNT}
   namespace: ${SERVICE_ACCOUNT}
 
 ---
 kind: Role
-#apiVersion: rbac.authorization.k8s.io/v1beta1
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ${SERVICE_ACCOUNT}
   namespace: ${SERVICE_ACCOUNT}
 rules:
 - apiGroups: ["", "networking.k8s.io", "extensions", "apps","autoscaling"]
-  #apiGroups: ["", "networking.k8s.io", "extensions", "apps","autoscaling", "rbac.authorization.k8s.io"]
   resources: ["*"]
   verbs: ["*"]
 - apiGroups: ["batch"]
@@ -30,10 +27,11 @@ rules:
   resources: ["roles", "rolebindings"]
   verbs: ["create", "get", "delete", "update", "patch", "list", "watch", "deletecollection", "bind"]
 
-  ## Allow access to poddisruptionbudgets (needed for newer Bitnami Postgresql charts)
+  ## Allow access to poddisruptionbudgets (needed for newer Bitnami Postgresql charts
+  ## and CNPG Operator)
 - apiGroups:  ["policy"]
   resources: ["poddisruptionbudgets"]
-  verbs: ["create", "get", "delete", "patch"]
+  verbs: ["create", "get", "delete", "patch", "list"]
 
 ---
 kind: RoleBinding
@@ -50,26 +48,9 @@ roleRef:
   kind: Role
   name: ${SERVICE_ACCOUNT}
 ---
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-# This role binding allows the SA to read CNPG Clusters in the namespace.
-# The ClusterRole was already created by CNPG
-metadata:
-  name: ${SERVICE_ACCOUNT}-cnpg
-  #
-  # The namespace of the RoleBinding determines where the permissions are granted.
-  # This only grants permissions within the SA namespace.
-  namespace: ${SERVICE_ACCOUNT}
-subjects:
-- kind: ServiceAccount
-  name: ${SERVICE_ACCOUNT}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: ${SERVICE_ACCOUNT}-cluster-editor-role
----
 # permissions for end users to edit clusters.
 # See other perms that may be needed: https://github.com/cloudnative-pg/cloudnative-pg/tree/main/config/rbac
+#
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -96,3 +77,104 @@ rules:
   - get
   - patch
   - update
+  - watch
+- apiGroups:
+    - postgresql.cnpg.io
+  resources:
+    - backups
+  verbs:
+    - list
+    - get
+    - delete
+- apiGroups:
+    - postgresql.cnpg.io
+  resources:
+    - backups/status
+  verbs:
+    - get
+    - patch
+    - update
+- apiGroups:
+    - postgresql.cnpg.io
+  resources:
+    - databases
+  verbs:
+    - get
+    - update
+    - list
+    - watch
+- apiGroups:
+    - postgresql.cnpg.io
+  resources:
+    - databases/status
+  verbs:
+    - get
+    - patch
+    - update
+- apiGroups:
+    - postgresql.cnpg.io
+  resources:
+    - publications
+  verbs:
+    - get
+    - update
+    - list
+    - watch
+- apiGroups:
+    - postgresql.cnpg.io
+  resources:
+    - publications/status
+  verbs:
+    - get
+    - patch
+    - update
+- apiGroups:
+    - postgresql.cnpg.io
+  resources:
+    - subscriptions
+  verbs:
+    - get
+    - update
+    - list
+    - watch
+- apiGroups:
+    - postgresql.cnpg.io
+  resources:
+    - subscriptions/status
+  verbs:
+    - get
+    - patch
+    - update
+- apiGroups:
+    - postgresql.cnpg.io
+  resources:
+    - failoverquorums
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+    - postgresql.cnpg.io
+  resources:
+    - failoverquorums/status
+  verbs:
+    - get
+    - patch
+    - update
+    - watch
+
+---
+# This role binding allows the SA to edit CNPG Clusters. The namespace of the RoleBinding determines
+# where the permissions are granted. This one grants permissions only within the SA namespace.
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ${SERVICE_ACCOUNT}-cnpg-cluster-editor-binding
+  namespace: ${SERVICE_ACCOUNT}
+subjects:
+  - kind: ServiceAccount
+    name: ${SERVICE_ACCOUNT}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${SERVICE_ACCOUNT}-cluster-editor-role
