@@ -37,7 +37,6 @@ rules:
 
 ---
 kind: RoleBinding
-#apiVersion: rbac.authorization.k8s.io/v1beta1
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ${SERVICE_ACCOUNT}
@@ -50,3 +49,21 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: ${SERVICE_ACCOUNT}
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+# This role binding allows the SA to read CNPG Clusters in the namespace.
+# The ClusterRole was already created by CNPG
+metadata:
+  name: ${SERVICE_ACCOUNT}-cnpg
+  #
+  # The namespace of the RoleBinding determines where the permissions are granted.
+  # This only grants permissions within the SA namespace.
+  namespace: ${SERVICE_ACCOUNT}
+subjects:
+- kind: ServiceAccount
+  name: ${SERVICE_ACCOUNT}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${SERVICE_ACCOUNT}-pg
