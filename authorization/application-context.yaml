@@ -1,3 +1,11 @@
+# This is a template for creating a Service Account and its associated default set of RBAC
+# permissions needed to run an app on a DataONE k8s cluster.
+# It is typically applied automatically when running the configure-k8s-service-account.sh script.
+# However, if you wish to apply it manually to a given namespace, you can do so by running:
+#
+#   $ SERVICE_ACCOUNT=<namespace> envsubst < application-context.yaml \
+#         | kubectl apply -n $SERVICE_ACCOUNT -f -
+
 ---
 # This Role and RoleBinding gives all permissions to the '${SERVICE_ACCOUNT}' Service account,
 # but limited to only the '${SERVICE_ACCOUNT}' namespace.
