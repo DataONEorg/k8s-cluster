@@ -27,7 +27,7 @@ rules:
   resources: ["roles", "rolebindings"]
   verbs: ["create", "get", "delete", "update", "patch", "list", "watch", "deletecollection", "bind"]
 
-  ## Allow access to poddisruptionbudgets (needed for newer Bitnami Postgresql charts
+  ## Allow access to poddisruptionbudgets (needed for newer Bitnami PostgreSQL charts
   ## and CNPG Operator)
 - apiGroups:  ["policy"]
   resources: ["poddisruptionbudgets"]
