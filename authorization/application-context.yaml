@@ -66,4 +66,33 @@ subjects:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: ${SERVICE_ACCOUNT}-pg
+  name: ${SERVICE_ACCOUNT}-cluster-editor-role
+---
+# permissions for end users to edit clusters.
+# See other perms that may be needed: https://github.com/cloudnative-pg/cloudnative-pg/tree/main/config/rbac
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${SERVICE_ACCOUNT}-cluster-editor-role
+  namespace: ${SERVICE_ACCOUNT}
+rules:
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
+  - clusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
+  - clusters/status
+  verbs:
+  - get
+  - patch
+  - update
