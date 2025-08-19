@@ -172,8 +172,8 @@ metadata:
   name: ${SERVICE_ACCOUNT}-cnpg-cluster-editor-binding
   namespace: ${SERVICE_ACCOUNT}
 subjects:
-  - kind: ServiceAccount
-    name: ${SERVICE_ACCOUNT}
+- kind: ServiceAccount
+  name: ${SERVICE_ACCOUNT}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
