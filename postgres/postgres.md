@@ -185,6 +185,73 @@ keycloak=> \d
 Did not find any relations.
 ```
 
+## Minor and major Postgres version upgrades
+
+One of the most challenging parts of managing the database is how to handle version upgrades with minimal or no downtime. CloudNativePG has significantly made this easier, and provides [multiple upgrde paths](https://cloudnative-pg.io/documentation/1.27/postgres_upgrades). Minor upgrades are handles seamlessly, while major upgrades are **also** handled seamlessless but have some additional considerations. For a great overview, see [CNPG Recipe 17 - PostgreSQL In-Place Major Upgrades](https://cloudnative-pg.io/documentation/1.27/postgres_upgrades/#example-performing-a-major-upgrade) by the maintainers of CloundNativePG.
+
+### Minor upgrades
+
+For [minor upgrades](https://cloudnative-pg.io/documentation/1.27/rolling_update/) within a major version, e.g., 17.4 to 17.5, all that is required is to update the cluster definition with a new image version, which will trigger a [rolling upgrade](https://cloudnative-pg.io/documentation/1.27/rolling_update/) of the replicas in the cluster. This is a fully online, no downtime upgrade. For example, given a database at version 17.1, applying the following manifest would do a rolling upgrade to 17.5:
+
+```
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.5-minimal-bookworm
+  instances: 3
+  storage:
+    size: 1Gi
+```
+
+Rather than managing the `imageName` manually, an alternative is to rely on an `ImageCatalog`. Updates to the minor version in an ImageCatalog will update all clusters that use that catalog to the most recent minor version. So this could be a mechanism for us to do patch releases without releasing new versions of sof helm charts.
+
+### Major  upgrades
+
+For major upgrade paths, we will focus on the two most recent (and arguably best) approaches:
+
+- Online upgrades via Native logical replication
+    - These are seamless, but are more complicated to set up
+    - No downtime, as the upgrade happens via replication to a new cluster. Applications then switch to the new cluster when ready.
+- Offline, in place upgrades using `pg_upgrade`
+    - Some downtime while the database is upgraded
+    - Applications do not need to be reconfigured, as they will already point to the new version on restart
+    - See: https://cloudnative-pg.io/documentation/1.27/postgres_upgrades/#offline-in-place-major-upgrades
+
+
+For the in-place upgrade, the benefits accrue around not having to reconfigure applications to point at a new cluster. It is fast, using hard-links for most file operations rather than copies, and works well in cases where the upgrade is not complicated, e.g., no obscure postgres extensions. It's major downside is that the upgrade may fail, but even in that case, it can be rolled back to the state before the upgrade started. 
+
+The basic procedue for an `pg_upgrade` is fairly simple procedurally. For example, starting from a version 16 database [as described in the user manual](https://cloudnative-pg.io/documentation/1.27/postgres_upgrades/#example-performing-a-major-upgrade):
+
+```
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:16-minimal-bookworm
+  instances: 3
+  storage:
+    size: 1Gi
+```
+
+you can update to version 17 postgres by simply changing the `imageName` to a more recent postgres image and re-applying the template (either with `kubectl` or through helm templates):
+
+```
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:17-minimal-bookworm
+  instances: 3
+  storage:
+    size: 1Gi
+```
+
+So, you can see the minor and major upgrade paths now use the same mechanism to trigger updates. The only difference is that major upgrades require some downtime while the database is upgraded.
+
 ## Database backups
 
 CloudNativePG now supports both [hot and cold backups](https://cloudnative-pg.io/documentation/1.27/backup/). For hot backups, it supports both a CNGP-I plugin to use external backup systems like Barman to backup to an object store, or CSI Volume snapshots.  For this initial use case, it is simplest to focus on [volume snapshots](https://cloudnative-pg.io/documentation/1.27/appendixes/backup_volumesnapshot/) for the backup and WAL files. By default, the backup uses online hot snapshots, which should work great for us. Once a backup has been completed, we will need to work to be sure the volume snapshot is preserved for an appropriate retention time.
