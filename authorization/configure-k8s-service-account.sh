@@ -7,10 +7,13 @@ set -o pipefail
 
 # The namespace and serviceaccount will have the same name as the application.
 # Config files will prefix these with cluster-type (dev or prod)
-if [[ -z "$1" ]] ; then
- echo "usage: $0 application-name cluster-type"
- exit 1
-fi
+case "$1" in
+  ""|-h|--help|--usage)
+    echo "usage: $0 application-name cluster-type"
+    exit 1
+    ;;
+esac
+
 
 if [[ -z "$2" ]] ; then
   CLUSTER_TYPE="dev"
