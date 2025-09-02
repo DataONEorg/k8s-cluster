@@ -170,6 +170,12 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
+  - poolers
+  verbs:
+    - get
 
 ---
 # This role binding allows the SA to edit CNPG Clusters. The namespace of the RoleBinding determines
