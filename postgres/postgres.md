@@ -140,16 +140,16 @@ spec:
   resources:  # see note below
     requests:
       requests:
-        cpu: 1
+        cpu: 500m
         memory: 1Gi
       limits:
-        cpu: 1
+        cpu: 500m
         memory: 1Gi
     parameters:
       shared_buffers: 256MB
 ```
 > [!NOTE]
-> Always set resource requests and limits. The [CNPG docs recommend](https://cloudnative-pg.io/documentation/1.20/resource_management/) setting limits and requests for both memory and CPU to the same value, so your cluster's pods get assigned to the "Guaranteed" QoS class
+> Always set resource requests and limits. The [CNPG docs recommend](https://cloudnative-pg.io/documentation/1.20/resource_management/) setting limits and requests for both memory and CPU to the same value, so your cluster's pods get assigned to the "Guaranteed" QoS class. Be sure to size appropriately for your database processing loads, without over-allocating resources.
 
 Now the database is named `keycloak` and other DB options have been set:
 
