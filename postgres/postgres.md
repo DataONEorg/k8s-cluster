@@ -285,6 +285,87 @@ spec:
   method: volumeSnapshot
 ```
 
+## Migrating from an existing database
+
+[Importing an existing database](https://cloudnative-pg.io/documentation/1.16/database_import/) into a new CNPG cluster is possible using the `initdb` bootstrap method, which will `import` the database specified in an `externalClusters` section. Two approaches are available - microservice and monolith. Microservice is for destination clusters that host a single application database, while monolith is for clusters designed to hold multiple databases and users. The import operation uses `pg_dump` via connection to the origin host, and `pg_restore` to create the database in the new cluster. Although concurrent writes during the `pg_dump` phase are not problematic to creating the snapshot, the `pg_restore` is based on that snapshot so any writes that happen after the `pg_dump` phase completes would not be in the migrated version of the database. The CNPG docs recommend stopping write operations on the source before the final import. The safest route would be to turn off write access to the origin postgres database, then do the entire migration. If downtime is a concern, CNPG does support [logical replication] using a `Publisher` and `Subscriber`. While doing the migration, it is simple to also upgrade postgres by setting the `imageName` field in the chart. In the example below I upgrade from postgres 10 (the old metadig version) to postgres 15 - just make sure that the new version is compatible with the features the old database requires.
+
+Below is an example `cluster.yaml` used to migrate metadig from a kubernetes postgres deployment with a custom helm chart to CNPG.
+
+```
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: metadig-pg
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.6
+  bootstrap:
+    initdb:
+      import:
+        type: microservice
+        databases:
+          - metadig
+        source:
+          externalCluster: cluster-metadig-10
+        pgRestoreExtraOptions:
+          - '--verbose'
+      database: metadig
+      owner: metadig
+      secret:
+        name: metadig-pg
+  storage:
+    storageClass: csi-cephfs-sc
+    size: 50Gi
+  externalClusters:
+    - name: cluster-metadig-10
+      connectionParameters:
+        # Use the correct IP or host name for the source database
+        host: 10.109.52.33
+        user: metadig
+        dbname: metadig
+      # password:
+      #    name: cluster-metadig-10-owner
+      #    key: password
+```
+
+#### `initdb` and `import`
+
+The `initdb` section is what the new database in the CNPG cluster will be called. This is described above in the keycloak example. The important fields here are the `database` name, `owner` user id, and the name of a `secret` to be used to create the password for the `owner` user. See above for instructions on how to create the secret.
+
+The `import` section describes the type of import, which database we are importing (for `microservices` only one entry in the `databases` field is allowed, and the source, which corresponds to the `externalCluster` field defined in the section below. Optionally, additional arguments for `pg_restore` and `pg_dump` can be set. The `--verbose` flag for `pg_restore` is particularly helpful if problems in the source database (such as missing keys, data not meeting constraints, etc) might exist, since otherwise the `pg_restore` error messages don't give much information.
+
+#### `externalClusters`
+
+[This section](https://cloudnative-pg.io/documentation/1.16/bootstrap/#the-externalclusters-section) describes how to connect to the source database. The name must match the name given in the `source` section in `initdb.import`. The username, database name, and (if required) password should all match whatever is needed to log into the source database. The host, when backing up from another k8s pod, should be the IP address of the pod. This can be obtained by running `kubectl get pod {PG-POD-NAME} -o wide`
+
+### The migration process
+
+Once the `cluster.yaml` is finished, create the new cluster by running `kubectl apply -f cluster.yaml` (make sure to create any secrets needed first). A few jobs will run as new pods in your k8s namespace.
+
+1. Bootstrap pod
+  - this is the import phase, where `pg_dump` and `pg_restore` happen
+  - inspect the logs to monitor progress (`kubectl logs {bootstrap-pod}`)
+  - this might take a while depending on the size of the db
+2. Init pod
+  - sets up users and applies other initial configs to the new db
+  - pretty quick
+3. Cluster pods
+  - once the bootstrap and init jobs/pods finish, the cluster pods should spin up, along with the `r/ro/rw` services
+
+To check on your new cluster db, exec into a pod and log into the postgres according to the credentials you set in the `initdb` section. **Note:** If you do not have a linux user of the same name as your db owner in your pod, you need to add `-h 127.0.0.1` to your `psql` command (eg: `psql metadig -U metadig -h 127.0.0.1`). Without the host, `psql` tries a Unix domain socket connection using peer auth, and if there is no `metadig` user the auth will fail.
+
+### Connecting your application to the new cluster
+
+Modifying your application to connect to the new cluster will depend entirely on how the app connected to the old cluster, of course. If using a jdbc url, just modify the `service` portion to match the new CNPG service name that is appropriate, eg: `jdbc:postgresql://{service}.{namespace}.svc.cluster.local:5432/{db-name}`. It may also be necessary to append `?sslmode=disable` to the end of the url (`jdbc:postgresql://metadig-pg-rw.metadig.svc.cluster.local:5432/metadig?sslmode=disable`). This disables ssl on the client side, since by default CNPG postgres instances have ssl enabled.
+
+### Cleaning up old postgres instance and mount
+
+TODO
+
+## Using a connection pooler
+
+TODO
+
 ## CloudNativePG Operator Installation
 
 The operator is only installed once on a Kubernetes cluster, and can be used by all applications to deploy Postgres as described above.
