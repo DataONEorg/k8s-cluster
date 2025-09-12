@@ -364,7 +364,31 @@ TODO
 
 ## Using a connection pooler
 
-TODO
+[Adding a connection pooler](https://cloudnative-pg.io/documentation/1.16/connection_pooling/) is easy! First create your Pooler. Make sure the `cluster.name` matches the name of the cluster you want to connect the pooler to. In this example I use `pgbouncer` with tranaction pooling. 
+
+```
+apiVersion: postgresql.cnpg.io/v1
+kind: Pooler
+metadata:
+  name: pooler-metadig-pg
+spec:
+  cluster:
+    name: metadig-pg
+
+  instances: 3
+  type: rw
+  pgbouncer:
+    poolMode: transaction
+    parameters:
+      max_client_conn: "200"
+      default_pool_size: "30"
+```
+
+Once the pooler is running, you'll need to modify your JDBC url (if using) to point to the pooler service instead of the CNPG service, eg: `jdbc:postgresql://pooler-metadig-pg.metadig.svc.cluster.local:5432/metadig?sslmode=disable`. 
+
+To check that your pooler is working correctly, you can exec into the pod in the usual way and examine the pgbouncer database by just running `psql` inside the pod. From there, the queries `SHOW POOLS`, `SHOW CLIENTS` and `SHOW STATS` are available.
+
+
 
 ## CloudNativePG Operator Installation
 
