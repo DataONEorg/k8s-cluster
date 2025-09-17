@@ -176,6 +176,18 @@ rules:
   - poolers
   verbs:
     - get
+- apiGroups:
+  - solr.apache.org
+  resources:
+  - solrclouds
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 
 ---
 # This role binding allows the SA to edit CNPG Clusters. The namespace of the RoleBinding determines
