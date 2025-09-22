@@ -2,9 +2,11 @@
 
 See [backup.md](backup.md) for details of how backup software is installed & configured
 
-* By default, all virtual server, physical servers, and K8s are backed up to disk servers at NCEAS (Anacapa) nightly (unless the previous night's backup is still running).
+* By default, all virtual servers, physical servers, and K8s are backed up to disk servers at NCEAS (Anacapa) nightly (unless the previous night's backup is still running).
 
-* Disk backups are retained for 3 years (36 monthly, 90 nightly)
+* Disk backups are retained for 3 years (36 monthly, 90 nightly).
+
+* CephFS Snapshots on the pdg subvolume are retained only 30 days.
 
 > [!WARNING]
 >
