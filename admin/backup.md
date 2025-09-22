@@ -1,5 +1,9 @@
 # K8s Backups
+
 ## Summary
+
+See [backup-summary.md](backup-summary.md) for a quick reference of what is backed up where, and how to restore.
+
 [Velero](https://velero.io) is used to backup our two K8s clusters (k8s and k8s-dev) to the Anacapa Ceph storage cluster via object storage to a MinIO server.
 
 We are using CSI volume snapshots and the Opt-out approach for backing up K8s resources and dynamically created Ceph RBD and FS volumes. 
