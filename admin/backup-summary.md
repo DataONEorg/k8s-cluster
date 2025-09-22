@@ -6,7 +6,8 @@ See [backup.md](backup.md) for details of how backup software is installed & con
 
 * Disk backups are retained for 3 years (36 monthly, 90 nightly).
 
-* CephFS Snapshots on the pdg subvolume are retained only 30 days.
+* CephFS Snapshots on the pdg subvolume (`datateam:/mnt/ceph/.snap/`) are retained only 30 days.
+
 
 > [!WARNING]
 >
