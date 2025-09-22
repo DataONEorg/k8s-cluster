@@ -4,7 +4,7 @@
 
 We are using CSI volume snapshots and the Opt-out approach for backing up K8s resources and dynamically created Ceph RBD and FS volumes. 
 
-Manually created CephFS volumes are not included in Velero backups and are backed up via [Restic](https://github.nceas.ucsb.edu/NCEAS/Computing/blob/master/restic.md)
+Manually created CephFS volumes are not included in Velero backups and are backed up via [Restic](https://github.nceas.ucsb.edu/NCEAS/Computing/blob/master/server_backup_restic.md)
 
 
 ## Operations
