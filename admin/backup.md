@@ -27,9 +27,10 @@ kubectl -n velero get datauploads -l velero.io/backup-name=full-test-1 -o yaml
 kubectl -n velero logs deploy/velero
 ```
 
-### Set an automatic backup schedule
+### Create automatic backup schedules
 ```
 velero schedule create full-backup --schedule="0 3 * * *" --ttl 2160h0m0s --snapshot-move-data
+velero schedule create full-backup-monthly --schedule="0 15 1 * *" --ttl 26280h0m0s --snapshot-move-data
 ```
 
 
