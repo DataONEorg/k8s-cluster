@@ -10,7 +10,7 @@ See [backup.md](backup.md) for details of how backup software is installed & con
 | **All other K8s Resources**         | Prod & Dev | Everything Else                                     | Velero                        | Object Storage[^3]          | K8s admins: can restore[^4]  |
 
 
-[^1]: Restic, in turn, backs up `datateam:/mnt/ceph/.snap/` to servers at the NCEAS office
+[^1]: [Restic](https://github.nceas.ucsb.edu/NCEAS/Computing/blob/master/server_backup_restic.md), in turn, backs up `datateam:/mnt/ceph/.snap/` to servers at the NCEAS office
 
 [^2]: In the dev cluster, some ceph subvolumes are backed up via rsync. Some ae not backed up at all. See the [Server Backup List](https://docs.google.com/spreadsheets/d/1xFOFQ1lF90BoFLYRkpBRSNj5QqVyfG2DLnwc1znaNI4/edit?usp=sharing) for details.
 
