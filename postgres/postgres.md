@@ -4,6 +4,9 @@ We have installed the Postgres Operator from [CloudNativePG](https://cloudnative
 
 ## Use of the operator
 
+> [!TIP]
+> The [dataone-cnpg Helm Chart](https://github.com/DataONEorg/dataone-cnpg/blob/main/) is an easy way to create a cluster, and is configurable to enable migrating from an existing database, either using [streaming replication](https://github.com/DataONEorg/dataone-cnpg/blob/main/README.md#2-streaming-replication-same-major-versions), or using `pg_dump` & `pg_restore` [as detailed below](#migrating-from-an-existing-database)
+
 Use of the operator means definining and creating a postgres cluster for an application, which CNPG picks up and creates for us. Attempting to create with a yaml like this, using either `csi-cephfs-sc-ephemeral` for testing or `csi-cephfs-sc` for a production storage class:
 
 ```yaml
