@@ -103,7 +103,7 @@ Below we add configuration to enable `initdb` to bootstrap a specific `keycloak`
 
 First the secret needs to be created. The `username` and `password` keys are required, but others can be added as well. Like all secrets, `data` keys are set to base64-encoded strings. The username you choose should match the `owner` field in the Cluster definition that comes next.
 
-```
+```yaml
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/basic-auth
@@ -116,7 +116,7 @@ data:
 
 Once that secret is in place, create the cluster with:
 
-```
+```yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -205,7 +205,7 @@ One of the most challenging parts of managing the database is how to handle vers
 
 For [minor upgrades](https://cloudnative-pg.io/documentation/1.27/rolling_update/) within a major version, e.g., 17.4 to 17.5, all that is required is to update the cluster definition with a new image version, which will trigger a [rolling upgrade](https://cloudnative-pg.io/documentation/1.27/rolling_update/) of the replicas in the cluster. This is a fully online, no downtime upgrade. For example, given a database at version 17.1, applying the following manifest would do a rolling upgrade to 17.5:
 
-```
+```yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -236,7 +236,7 @@ For the in-place upgrade, the benefits accrue around not having to reconfigure a
 
 The basic procedue for an `pg_upgrade` is fairly simple procedurally. For example, starting from a version 16 database [as described in the user manual](https://cloudnative-pg.io/documentation/1.27/postgres_upgrades/#example-performing-a-major-upgrade):
 
-```
+```yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -250,7 +250,7 @@ spec:
 
 you can update to version 17 postgres by simply changing the `imageName` to a more recent postgres image and re-applying the template (either with `kubectl` or through helm templates):
 
-```
+```yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -272,7 +272,7 @@ Because backups can be intensive, we can request that backups be made against a 
 
 Configuration involves providing an instance of the `ScheduledBackup` resource. A typical configuration might look like this:
 
-```
+```yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
@@ -291,7 +291,7 @@ spec:
 
 Below is an example `cluster.yaml` used to migrate metadig from a kubernetes postgres deployment with a custom helm chart to CNPG.
 
-```
+```yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -366,7 +366,7 @@ TODO
 
 [Adding a connection pooler](https://cloudnative-pg.io/documentation/1.16/connection_pooling/) is easy! First create your Pooler. Make sure the `cluster.name` matches the name of the cluster you want to connect the pooler to. In this example I use `pgbouncer` with tranaction pooling. 
 
-```
+```yaml
 apiVersion: postgresql.cnpg.io/v1
 kind: Pooler
 metadata:
