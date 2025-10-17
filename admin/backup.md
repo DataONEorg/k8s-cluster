@@ -47,6 +47,26 @@ Velero is run from a location with access to both the K8s/K8s-dev admin credenti
 - Run the `velero install` command
 - Increase the memory limits and backup timeout
 - Create a schedule
+- Create a backuppvc configmap:
+
+backuppvc.json
+```
+{
+    "backupPVC": {
+        "csi-cephfs-sc": {
+            "storageClass": "backupPVC-storage-class",
+            "readOnly": true
+        },
+        "csi-cephfs-sc-ephemeral": {
+            "storageClass": "backupPVC-storage-class",
+            "readOnly": true
+        }
+    }
+}
+```
+```
+kubectl create cm backuppvc -n velero --from-file backupPVC.json
+```
 
 
 ### K8s-prod
@@ -61,7 +81,8 @@ velero install \
   --snapshot-location-config region=default \
   --use-node-agent \
   --use-volume-snapshots=true \
-  --features=EnableCSI
+  --features=EnableCSI \
+  --node-agent-configmap=backuppvc
 ```
 
 ### K8s-dev
@@ -76,7 +97,8 @@ velero install \
   --snapshot-location-config region=default \
   --use-node-agent \
   --use-volume-snapshots=true \
-  --features=EnableCSI
+  --features=EnableCSI \
+  --node-agent-configmap=backuppvc
 ```
 
 
