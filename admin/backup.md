@@ -54,11 +54,9 @@ backuppvc.json
 {
     "backupPVC": {
         "csi-cephfs-sc": {
-            "storageClass": "backupPVC-storage-class",
             "readOnly": true
         },
         "csi-cephfs-sc-ephemeral": {
-            "storageClass": "backupPVC-storage-class",
             "readOnly": true
         }
     }
