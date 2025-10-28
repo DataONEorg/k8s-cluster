@@ -1,6 +1,34 @@
-# This is a template for adding the Role and RoleBinding needed by the qgnet project, in order to
-# grant the additional permissions needed by the community-based Argo Workflow.
-# The RoleBinding should be bound to the same ServiceAccount used by Argo Workflows.
+# This is a template for adding the Role and RoleBinding, ClusterRole and ClusterRoleBinding needed
+# by the qgnet project, in order to grant the additional permissions needed by the community-based
+# Argo Workflow helm chart.
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: qgnet-argo-clusterlevel
+rules:
+  - apiGroups: [ "apiextensions.k8s.io" ]
+    resources: [ "customresourcedefinitions" ]
+    verbs: [ "create", "update", "get", "list", "watch", "delete", "patch", "deletecollection" ]
+  - apiGroups: [ "rbac.authorization.k8s.io" ]
+    resources: [ "clusterroles", "clusterrolebindings" ]
+    verbs: [ "create", "update", "get", "list", "watch", "delete", "patch", "deletecollection", "bind", "escalate" ]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: qgnet-argo-clusterlevel
+subjects:
+  - kind: ServiceAccount
+    name: qgnet
+    namespace: qgnet
+roleRef:
+  kind: ClusterRole
+  name: qgnet-argo-clusterlevel
+  apiGroup: rbac.authorization.k8s.io
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -8,77 +36,25 @@ metadata:
   name: qgnet-argo
   namespace: qgnet
 rules:
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["roles", "rolebindings"]
-  verbs: ["create", "update", "get", "list", "watch", "delete"]
-- apiGroups: ["discovery.k8s.io"]
-  resources: ["endpointslices"]
-  verbs: ["list"]
-- apiGroups: ["argoproj.io"]
-  resources: ["workflowtaskresults"]
-  verbs: ["create", "patch"]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "cronworkflows" ]
-  verbs: [ "create", "get", "list", "watch", "update", "patch", "delete" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "cronworkflows/finalizers" ]
-  verbs: [ "create", "get", "list", "watch", "update", "patch", "delete" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "workflows" ]
-  verbs: [ "get", "list", "watch", "update", "patch", "delete", "create" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "workflows/finalizers" ]
-  verbs: [ "get", "list", "watch", "update", "patch", "delete", "create" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "workflowtasksets" ]
-  verbs: [ "get", "list", "watch", "update", "patch", "delete", "create" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "workflowtasksets/finalizers" ]
-  verbs: [ "get", "list", "watch", "update", "patch", "delete", "create" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "workflowtasksets/status" ]
-  verbs: [ "get", "list", "watch", "update", "patch", "delete", "create" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "workflowtemplates" ]
-  verbs: [ "create", "get", "list", "watch", "update", "patch", "delete" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "workflowtemplates/finalizers" ]
-  verbs: [ "create", "get", "list", "watch", "update", "patch", "delete" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "eventsources" ]
-  verbs: [ "create", "get", "list", "watch", "update", "patch", "delete" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "sensors" ]
-  verbs: [ "create", "get", "list", "watch", "update", "patch", "delete" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "workfloweventbindings" ]
-  verbs: [ "create", "get", "list", "watch", "update", "patch", "delete" ]
-- apiGroups: [ "coordination.k8s.io"]
-  resources: ["leases"]
-  resourceNames: ["workflow-controller"]
-  verbs: ["get", "watch", "update", "patch", "delete"]
-- apiGroups: [ "coordination.k8s.io" ]
-  resources: [ "leases" ]
-  resourceNames: [ "workflow-controller-lease" ]
-  verbs: [ "get", "watch", "update", "patch", "delete" ]
-- apiGroups: [ "coordination.k8s.io" ]
-  resources: [ "leases" ]
-  verbs: [ "create" ]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "workflowtaskresults" ]
-  verbs: [ "list", "watch", "deletecollection"]
-- apiGroups: [ "argoproj.io" ]
-  resources: [ "workflowtaskresults/finalizers" ]
-  verbs: [ "list", "watch", "deletecollection"]
-- apiGroups: ["argoproj.io"]
-  resources: ["workflowartifactgctasks"]
-  verbs: ["list", "watch", "get", "update", "patch", "delete", "create"]
-- apiGroups: ["argoproj.io"]
-  resources: ["workflowartifactgctasks/status"]
-  verbs: ["patch"]
-- apiGroups: ["apiextensions.k8s.io"]
-  resources: ["customresourcedefinitions"]
-  verbs: ["get"]
+  - apiGroups: [ "rbac.authorization.k8s.io" ]
+    resources: [ "roles", "rolebindings" ]
+    verbs: [ "create", "update", "get", "list", "watch", "delete" ]
+  - apiGroups: [ "discovery.k8s.io" ]
+    resources: [ "endpointslices" ]
+    verbs: [ "list" ]
+  - apiGroups: [ "argoproj.io" ]
+    resources: [ "*" ]
+    verbs: [ "*" ]
+  - apiGroups: [ "coordination.k8s.io" ]
+    resources: [ "leases" ]
+    verbs: [ "create" ]
+  - apiGroups: [ "coordination.k8s.io" ]
+    resources: [ "leases" ]
+    resourceNames: [ "workflow-controller", "workflow-controller-lease" ]
+    verbs: [ "get", "watch", "update", "patch", "delete" ]
+  - apiGroups: [ "apiextensions.k8s.io" ]
+    resources: [ "customresourcedefinitions" ]
+    verbs: [ "get" ]
 
 ---
 kind: RoleBinding
@@ -94,30 +70,3 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: qgnet-argo
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: qgnet-argo-clusterlevel
-rules:
-  - apiGroups: ["apiextensions.k8s.io"]
-    resources: ["customresourcedefinitions"]
-    verbs: ["create", "update", "get", "list", "watch", "delete", "patch", "deletecollection"]
-  - apiGroups: ["rbac.authorization.k8s.io"]
-    resources: ["clusterroles", "clusterrolebindings"]
-    verbs: ["create", "update", "get", "list", "watch", "delete", "patch", "deletecollection", "bind", "escalate"]
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: qgnet-argo-clusterlevel
-subjects:
-  - kind: ServiceAccount
-    name: qgnet
-    namespace: qgnet
-roleRef:
-  kind: ClusterRole
-  name: qgnet-argo-clusterlevel
-  apiGroup: rbac.authorization.k8s.io
