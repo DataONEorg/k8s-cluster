@@ -40,11 +40,11 @@ rules:
 ## Allow access to rbac roles and rolebindings. Needed for these specific Bitnami charts:
 ## - RabbitMQ
 ## - any others?
+## (old verbs: ["create","get","delete","update","patch","list","watch","deletecollection","bind"])
 ##
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["roles", "rolebindings"]
-  verbs: ["create", "get"]
-  # old verbs: ["create","get","delete","update","patch","list","watch","deletecollection","bind"]
+  verbs: ["create", "get", "delete"]
 
 ---
 kind: RoleBinding
