@@ -30,16 +30,21 @@ rules:
   - jobs
   - cronjobs
   verbs: ["*"]
-  ## Allow access to rbac roles and rolebindings (needed for some Bitnami charts):
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["roles", "rolebindings"]
-  verbs: ["create", "get", "delete", "update", "patch", "list", "watch", "deletecollection", "bind"]
 
-  ## Allow access to poddisruptionbudgets (needed for newer Bitnami PostgreSQL charts
-  ## and CNPG Operator)
-- apiGroups:  ["policy"]
+  ## Allow access to poddisruptionbudgets (needed CNPG Operator)
+- apiGroups: ["policy"]
   resources: ["poddisruptionbudgets"]
   verbs: ["create", "get", "delete", "patch", "list"]
+
+## DANGEROUS! REMOVE WHEN BITNAMI NO LONGER USED!
+## Allow access to rbac roles and rolebindings. Needed for these specific Bitnami charts:
+## - RabbitMQ
+## - any others?
+##
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["roles", "rolebindings"]
+  verbs: ["create", "get"]
+  # old verbs: ["create","get","delete","update","patch","list","watch","deletecollection","bind"]
 
 ---
 kind: RoleBinding
@@ -56,9 +61,10 @@ roleRef:
   kind: Role
   name: ${SERVICE_ACCOUNT}
 ---
-# permissions for end users to edit clusters.
-# See other perms that may be needed: https://github.com/cloudnative-pg/cloudnative-pg/tree/main/config/rbac
-#
+## Specific CloudNative PG permissions needed for end users to edit clusters.
+## See other perms that may be needed
+## https://github.com/cloudnative-pg/cloudnative-pg/tree/main/config/rbac
+##
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
