@@ -1,4 +1,7 @@
-# authorization/custom-rolebindings
+# Custom Roles and RoleBindings
+
+> [!CAUTION]
+> We need to practise the **principle of least privilege** when granting access to resources. Do not grant more permissions than are absolutely necessary for the application to function, and don't grant them more widely than necessary (e.g. to other accounts, and/or at cluster level).
 
 Some products may require custom permissions to function correctly, in addition to those provided by the standard application-context.yaml definitions we apply by default when creating new contexts & associated service accounts.
 

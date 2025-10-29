@@ -55,28 +55,35 @@ This script will add the new context in two places:
 
 ## Grant Additional Privileges To The serviceAccount
 
+> [!NOTE]
+> The defaults will be applied in the initial creation of the `serviceaccount`, so this step
+will usually not be needed. REMINDER: we need to practise the **principle of least privilege**
+when granting access to resources.
+
 A serviceAccount is initially created with a default set of privileges granted as configured in the
-template application-context.yaml file.
+template application-context.yaml file. A k8s `role` and `rolebinding` are created to grant access
+to the serviceAccount to perform any actions on the namespace created for the application. No
+actions on any other resource outside the designated namespace are granted.
 
-A k8s `role` and `rolebinding` are created to grant access to the serviceAccount to perform any
-actions on the namespace created for the application. No actions on any other resource outside
-the designated namespace are granted. To add additional privileges, you can update the `Role` and
-`RoleBinding` resources for the service account, adding additional roles as needed, and updating it
-with `kubectl apply`.
+## `role` and `rolebinding`
 
-Note that the defaults will be applied in the initial creation of the `serviceaccount`, so this step
-will usually not be needed.
+If it is necessary to add additional privileges for a service account within a given namespace, you
+can update the `Role` and `RoleBinding` resources for the service account, adding additional roles
+as needed, and updating it with `kubectl apply`. Please save copies of the yaml file(s) in the
+[custom-rolebindings](./custom-rolebindings) directory, and update the [custom-rolebindings.md
+file](./custom-rolebindings) with instructions.
 
-## `clusterrole` and `clusterrolebinding`
+### `clusterrole` and `clusterrolebinding`
 
-> **Note**: Use this ONLY if you are sure that the application needs access to cluster-level
-> resources. This is not recommended for most applications: it is a security risk and/or it may tie
-> us too closely to the k8s model.
+> [!CAUTION]
+> Use this option ONLY if ABSOLUTELY necessary. This is a security risk, and is not recommended for
+> most applications!
 
 If an application needs to access resources at the cluster level, you can create a `ClusterRole` and
 `ClusterRoleBinding` for the service account. The creation and application of these resources is
-similar to those for `Role` `RoleBinding`, above. However, copies of the yaml for each should be
-saved in the [custom-rolebindings](./custom-rolebindings) directory.
+similar to those for `Role` `RoleBinding`, above. Please save copies of the yaml file(s) in the
+[custom-rolebindings](./custom-rolebindings) directory, and update the [custom-rolebindings.md
+file](./custom-rolebindings) with instructions.
 
 ## Client Setup
 
