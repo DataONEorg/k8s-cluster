@@ -11,7 +11,7 @@ These permissions should not be added to `application-context.yaml`, unless they
 
 When adding new entries, make notes below, regarding any special steps needed during the installation process.
 
-## QGNET Argo Workflows
+### QGNET Argo Workflows
 
 1. As admin, create the context and apply the custom rolebindings:
 
