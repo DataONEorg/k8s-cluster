@@ -68,6 +68,39 @@ rules:
 
 ---
 ####################################################################################################
+## RABBITMQ CLUSTER OPERATOR ROLE AND ROLEBINDING DEFINITIONS
+####################################################################################################
+## Specific RabbitMQ Operator permissions needed for end users to create and manage clusters.
+## See
+##
+##
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ${SERVICE_ACCOUNT}-rmq-cluster-editor
+  namespace: ${SERVICE_ACCOUNT}
+subjects:
+  - kind: ServiceAccount
+    name: ${SERVICE_ACCOUNT}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${SERVICE_ACCOUNT}-rmq-cluster-editor
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${SERVICE_ACCOUNT}-rmq-cluster-editor
+  namespace: ${SERVICE_ACCOUNT}
+rules:
+  - apiGroups: ["rabbitmq.com"]
+    resources: ["rabbitmqclusters"]
+    verbs: [ "create", "delete", "get", "list", "patch", "update", "watch" ]
+
+---
+####################################################################################################
 ## SOLR OPERATOR ROLE AND ROLEBINDING DEFINITIONS
 ####################################################################################################
 kind: RoleBinding
