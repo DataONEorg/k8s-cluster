@@ -38,6 +38,9 @@ kubectl rabbitmq [-n NAMESPACE] debug INSTANCE
 ##   - 'tail' subcommand requires the 'tail' plugin; install with 'kubectl krew install tail'
 ##   - Must explicitly define the namespace to use tail, otherwise results in RBAC errors
 kubectl rabbitmq -n NAMESPACE tail INSTANCE
+
+## Run a performance test job against an instance
+kubectl rabbitmq [-n NAMESPACE] perf-test INSTANCE
 ```
 
 ## Creating a RabbitMQ Instance
@@ -47,11 +50,11 @@ Refer to: [Using the RabbitMQ Cluster Operator](https://www.rabbitmq.com/kuberne
 You can use a super-simple definition like this:
 
 ```yaml
-$ cat rabbitmq.yaml
+## $ cat rabbitmq.yaml
 apiVersion: rabbitmq.com/v1beta1
 kind: RabbitmqCluster
 metadata:
-  name: rmq
+  name: myreleasermq
 ```
 
 ...to deploy an instance:
@@ -61,7 +64,7 @@ $ kubectl apply -f rabbitmq.yaml
 rabbitmqcluster.rabbitmq.com/hello-world created
 ```
 
-This creates a `StatefulSet` with a single RabbitMQ Pod named `rmq-server-0`, using all default settings. It also creates a 10Gi `PVC` using the default storage class, and a `ClusterIP` Service named `rmq`, to expose ports `amqp:5672, management:15672`, and `prometheus:15692` within the cluster. The default `resources` assigned are:
+This creates a `StatefulSet` with a single RabbitMQ Pod named `myreleasermq-server-0`, using all default settings. It also creates a 10Gi `PVC` using the default storage class, and a `ClusterIP` Service named `myreleasermq`, to expose ports `amqp:5672, management:15672`, and `prometheus:15692` within the cluster. The default `resources` assigned are:
 
 ```yaml
 resources:
@@ -72,17 +75,23 @@ resources:
     cpu: 2
     memory: 2Gi
 ```
-The credentials are stored in a Secret named `hello-world-default-user`, and can easily be retrieved using the `kubectl rabbitmq` plugin:
+The credentials are stored in a Secret named `myreleasermq-default-user`, and can easily be retrieved using the `kubectl rabbitmq` plugin:
 
 ```shell
-$ kubectl rabbitmq secrets hello-world
+$ kubectl rabbitmq secrets myreleasermq
 username: default_user__xHBwZjei3Pp2kYo8LJ
 password: y2rtDOP7xISwt_kPJ_dEbiBQeB-nsc1w
 ```
-...allowing you to log into the management console, launched using:
+...allowing you to log into the management console web UI, launched using:
 ```shell
-$ kubectl rabbitmq manage rmq
+$ kubectl rabbitmq manage myreleasermq
 ```
+...and then you can run a performance test against the instance using:
+```shell
+$ kubectl rabbitmq perf-test myreleasermq
+```
+...and see it in action, in the management console web UI.
+
 
 ## RabbitMQ Cluster Operator Installation/Upgrade
 
