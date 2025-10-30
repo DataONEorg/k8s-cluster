@@ -1,14 +1,19 @@
-# This is a template for creating a Service Account and its associated default set of RBAC
-# permissions needed to run an app on a DataONE k8s cluster.
-# It is typically applied automatically when running the configure-k8s-service-account.sh script.
-# However, if you wish to apply it manually to a given namespace, you can do so by running:
-#
-#   $ SERVICE_ACCOUNT=<namespace> envsubst < application-context.yaml \
-#         | kubectl apply -n $SERVICE_ACCOUNT -f -
-
+## This is a template for creating a Service Account and its associated default set of RBAC
+## permissions (Roles and RoleBindings) needed to run an app on a DataONE k8s cluster.
+## The Roles and RoleBindings grant permissions to the '${SERVICE_ACCOUNT}' Service account, but are
+## limited to only the '${SERVICE_ACCOUNT}' namespace. The recommended way to apply this template is
+## by running the idempotent script:    ./configure-k8s-service-account.sh.
+## However, if you wish to apply it manually to a given namespace, you can do so by running:
+##
+##   $ SERVICE_ACCOUNT=<my-namespace> envsubst < application-context.yaml \
+##         | kubectl apply -n $SERVICE_ACCOUNT -f -
+##
+## TO ADD NEW PERMISSIONS FOR A SPECIFIC OPERATOR ETC: append a new Role to the end of the file,
+## and edit the existing RoleBinding to bind it to the ServiceAccount.
 ---
-# This Role and RoleBinding gives all permissions to the '${SERVICE_ACCOUNT}' Service account,
-# but limited to only the '${SERVICE_ACCOUNT}' namespace.
+####################################################################################################
+## SERVICE ACCOUNT DEFINITION
+####################################################################################################
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -16,197 +21,136 @@ metadata:
   namespace: ${SERVICE_ACCOUNT}
 
 ---
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: ${SERVICE_ACCOUNT}
-  namespace: ${SERVICE_ACCOUNT}
-rules:
-- apiGroups: ["", "networking.k8s.io", "extensions", "apps","autoscaling"]
-  resources: ["*"]
-  verbs: ["*"]
-- apiGroups: ["batch"]
-  resources:
-  - jobs
-  - cronjobs
-  verbs: ["*"]
-
-  ## Allow access to poddisruptionbudgets (needed CNPG Operator)
-- apiGroups: ["policy"]
-  resources: ["poddisruptionbudgets"]
-  verbs: ["create", "get", "delete", "patch", "list"]
-
-## DANGEROUS! REMOVE WHEN BITNAMI NO LONGER USED!
-## Allow access to rbac roles and rolebindings. Needed for these specific Bitnami charts:
-## - RabbitMQ
-## - any others?
-## (old verbs: ["create","get","delete","update","patch","list","watch","deletecollection","bind"])
+####################################################################################################
+## COMMON ROLE AND ROLEBINDING DEFINITIONS
+####################################################################################################
 ##
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["roles", "rolebindings"]
-  verbs: ["create", "get", "delete"]
-
----
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: ${SERVICE_ACCOUNT}
   namespace: ${SERVICE_ACCOUNT}
 subjects:
-- kind: ServiceAccount
-  name: ${SERVICE_ACCOUNT}
-  namespace: ${SERVICE_ACCOUNT}
+  - kind: ServiceAccount
+    name: ${SERVICE_ACCOUNT}
+    namespace: ${SERVICE_ACCOUNT}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: ${SERVICE_ACCOUNT}
+
 ---
-## Specific CloudNative PG permissions needed for end users to edit clusters.
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ${SERVICE_ACCOUNT}
+  namespace: ${SERVICE_ACCOUNT}
+rules:
+  ## NOTE: do not remove `apiGroups: [""]`; it grants permissions to core Kubernetes resources
+  - apiGroups: [ "", "networking.k8s.io", "extensions", "apps","autoscaling" ]
+    resources: [ "*" ]
+    verbs: [ "*" ]
+  - apiGroups: [ "batch" ]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: [ "*" ]
+
+  ## DANGEROUS! REMOVE WHEN BITNAMI NO LONGER USED!
+  ## Allow access to rbac roles and rolebindings. Needed for these specific Bitnami charts:
+  ## - RabbitMQ
+  ## - any others?
+  ## (old verbs: ["create","get","delete","update","patch","list","watch","deletecollection","bind"])
+  ##
+  - apiGroups: [ "rbac.authorization.k8s.io" ]
+    resources: [ "roles", "rolebindings" ]
+    verbs: [ "create", "get", "delete" ]
+
+---
+####################################################################################################
+## SOLR OPERATOR ROLE AND ROLEBINDING DEFINITIONS
+####################################################################################################
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ${SERVICE_ACCOUNT}-solr-cluster-editor
+  namespace: ${SERVICE_ACCOUNT}
+subjects:
+  - kind: ServiceAccount
+    name: ${SERVICE_ACCOUNT}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ${SERVICE_ACCOUNT}-solr-cluster-editor
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${SERVICE_ACCOUNT}-solr-cluster-editor
+  namespace: ${SERVICE_ACCOUNT}
+rules:
+  - apiGroups: [ "solr.apache.org" ]
+    resources: [ "solrclouds" ]
+    verbs: [ "create", "delete", "get", "list", "patch", "update", "watch" ]
+
+---
+####################################################################################################
+## CloudNative PG OPERATOR
+####################################################################################################
+## Specific CloudNative PG permissions needed for end users to create and manage clusters.
 ## See other perms that may be needed
 ## https://github.com/cloudnative-pg/cloudnative-pg/tree/main/config/rbac
 ##
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: ${SERVICE_ACCOUNT}-cluster-editor-role
-  namespace: ${SERVICE_ACCOUNT}
-rules:
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - clusters
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - clusters/status
-  verbs:
-  - get
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - backups
-  verbs:
-  - list
-  - get
-  - delete
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - backups/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - databases
-  verbs:
-  - get
-  - update
-  - list
-  - watch
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - databases/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - publications
-  verbs:
-  - get
-  - update
-  - list
-  - watch
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - publications/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - subscriptions
-  verbs:
-  - get
-  - update
-  - list
-  - watch
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - subscriptions/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - failoverquorums
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - failoverquorums/status
-  verbs:
-  - get
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - postgresql.cnpg.io
-  resources:
-  - poolers
-  verbs:
-    - get
-- apiGroups:
-  - solr.apache.org
-  resources:
-  - solrclouds
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-
----
-# This role binding allows the SA to edit CNPG Clusters. The namespace of the RoleBinding determines
-# where the permissions are granted. This one grants permissions only within the SA namespace.
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: ${SERVICE_ACCOUNT}-cnpg-cluster-editor-binding
+  name: ${SERVICE_ACCOUNT}-cnpg-cluster-editor
   namespace: ${SERVICE_ACCOUNT}
 subjects:
-- kind: ServiceAccount
-  name: ${SERVICE_ACCOUNT}
+  - kind: ServiceAccount
+    name: ${SERVICE_ACCOUNT}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: ${SERVICE_ACCOUNT}-cluster-editor-role
+  name: ${SERVICE_ACCOUNT}-cnpg-cluster-editor
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ${SERVICE_ACCOUNT}-cnpg-cluster-editor
+  namespace: ${SERVICE_ACCOUNT}
+
+rules:
+  - apiGroups: [ "policy" ]
+    resources: [ "poddisruptionbudgets" ]
+    verbs: [ "create", "get", "delete", "patch", "list" ]
+
+  - apiGroups: [ "postgresql.cnpg.io" ]
+    resources: [ "clusters" ]
+    verbs: [ "create", "delete", "get", "list", "patch", "update", "watch" ]
+
+  - apiGroups: [ "postgresql.cnpg.io" ]
+    resources: [ "clusters/status", "failoverquorums/status" ]
+    verbs: [ "get", "patch", "update", "watch" ]
+
+  - apiGroups: [ "postgresql.cnpg.io" ]
+    resources: [ "backups/status", "databases/status", "publications/status", "subscriptions/status" ]
+    verbs: [ "get", "patch", "update" ]
+
+  - apiGroups: [ "postgresql.cnpg.io" ]
+    resources: [ "databases", "publications", "subscriptions" ]
+    verbs: [ "get", "update", "list", "watch" ]
+
+  - apiGroups: [ "postgresql.cnpg.io" ]
+    resources: [ "failoverquorums" ]
+    verbs: [ "get", "list", "watch" ]
+
+  - apiGroups: [ "postgresql.cnpg.io" ]
+    resources: [ "backups" ]
+    verbs: [ "list", "get", "delete" ]
+
+  - apiGroups: [ "postgresql.cnpg.io" ]
+    resources: [ "poolers" ]
+    verbs: [ "get" ]
