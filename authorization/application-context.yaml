@@ -181,8 +181,8 @@ rules:
     verbs: [ "get", "list", "watch" ]
 
   - apiGroups: [ "postgresql.cnpg.io" ]
-    resources: [ "backups" ]
-    verbs: [ "list", "get", "delete" ]
+    resources: [ "backups", "scheduledbackups" ]
+    verbs: [ "list", "get", "create", "delete" ]
 
   - apiGroups: [ "postgresql.cnpg.io" ]
     resources: [ "poolers" ]
