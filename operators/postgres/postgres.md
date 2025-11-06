@@ -338,6 +338,67 @@ keycloakx-scheduled-backup-20251106044736   17m   keycloakx-cnpg   volumeSnapsho
 
 The name of each backup (e.g., `keycloakx-scheduled-backup-20251106044736`) can be used to initiate a recovery process to create a new cluster from the snapshot volume associated with the backup. The metadata about the Backup (using `kubectl describe`) will list the details of the volume that was created, along with postgres details such as the Beginning and end LSN, and beginngin and end WAL file for the backup. The `VolumeSnapshot` that is created will likely have the same name as the backup and will also have many of these metadata details as well.
 
+## Recovering from a Backup
+
+A new cluster can be created to recover the database from the named `Backup` created in the prior section. This is done be creating a CNPG cluster as described earlier, but the difference being that it uses `spec.bootstrap.recovery` rather than the other initialization methods described earlier. The recovery is passed the name of the backup object in the `spec.bootstrap.recovery.backup.name` field. Because the associated VolumeSnapshot contains all of the major database metadata, the restore can continue with minimal configuration. That said, CNPG assumes that the database name and owner are the default `app`, and so if you customized these, you need to configure the database to provide those details, along with the secret for connecting to the database, and the `storage` spec to be used to create new PVCs for the new database. Nevertheless, recovery can be accomplished with a simple yaml such as:
+
+```yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: recovered-cnpg
+  namespace: keycloak
+spec:
+  instances: 3
+  bootstrap:
+    recovery:
+      backup:
+        name: keycloakx-scheduled-backup-20251106044736
+      database: keycloak
+      owner: keycloak
+      secret:
+        name: keycloak-pg
+  storage:
+    storageClass: csi-cephfs-sc-ephemeral
+    size: 10Gi
+```
+
+I named this `recovered-cnpg` to differentiate it from the original, but in true recovery situations, you'd likely want the new database cluster to have the same name as the original that you are recovering. Once that yaml has been applied, it will take some time to create the cluster and 3 new replicas. Like otherCNPG clusters, we can inspect it with the `kubectl cnpg` plugin:
+
+```bash
+❯ kubectl cnpg -n keycloak status recovered-cnpg
+Cluster Summary
+Name                 keycloak/recovered-cnpg
+System ID:           7553788570016837662
+PostgreSQL Image:    ghcr.io/cloudnative-pg/postgresql:17.5
+Primary instance:    recovered-cnpg-1
+Primary start time:  2025-11-06 06:43:00 +0000 UTC (uptime 25m55s)
+Status:              Cluster in healthy state
+Instances:           3
+Ready instances:     3
+Size:                640M
+Current Write LSN:   2B/5D000060 (Timeline: 1 - WAL File: 000000010000002B0000005D)
+
+Continuous Backup status
+Not configured
+
+Streaming Replication status
+Replication Slots Enabled
+Name              Sent LSN     Write LSN    Flush LSN    Replay LSN   Write Lag  Flush Lag  Replay Lag  State      Sync State  Sync Priority  Replication Slot
+----              --------     ---------    ---------    ----------   ---------  ---------  ----------  -----      ----------  -------------  ----------------
+recovered-cnpg-2  2B/5D000060  2B/5D000060  2B/5D000060  2B/5D000060  00:00:00   00:00:00   00:00:00    streaming  async       0              active
+recovered-cnpg-3  2B/5D000060  2B/5D000060  2B/5D000060  2B/5D000060  00:00:00   00:00:00   00:00:00    streaming  async       0              active
+
+Instances status
+Name              Current LSN  Replication role  Status  QoS         Manager Version  Node
+----              -----------  ----------------  ------  ---         ---------------  ----
+recovered-cnpg-1  2B/5D000060  Primary           OK      BestEffort  1.27.0           k8s-dev-node-4
+recovered-cnpg-2  2B/5D000060  Standby (async)   OK      BestEffort  1.27.0           k8s-dev-node-2
+recovered-cnpg-3  2B/5D000060  Standby (async)   OK      BestEffort  1.27.0           k8s-dev-node-3
+```
+
+And that's it, we have a fully functional, recovered cluster.
+ 
 ## Migrating from an existing database
 
 [Importing an existing database](https://cloudnative-pg.io/documentation/1.16/database_import/) into a new CNPG cluster is possible using the `initdb` bootstrap method, which will `import` the database specified in an `externalClusters` section. Two approaches are available - microservice and monolith. Microservice is for destination clusters that host a single application database, while monolith is for clusters designed to hold multiple databases and users. The import operation uses `pg_dump` via connection to the origin host, and `pg_restore` to create the database in the new cluster. Although concurrent writes during the `pg_dump` phase are not problematic to creating the snapshot, the `pg_restore` is based on that snapshot so any writes that happen after the `pg_dump` phase completes would not be in the migrated version of the database. The CNPG docs recommend stopping write operations on the source before the final import. The safest route would be to turn off write access to the origin postgres database, then do the entire migration. If downtime is a concern, CNPG does support [logical replication] using a `Publisher` and `Subscriber`. While doing the migration, it is simple to also upgrade postgres by setting the `imageName` field in the chart. In the example below I upgrade from postgres 10 (the old metadig version) to postgres 15 - just make sure that the new version is compatible with the features the old database requires.
