@@ -27,7 +27,7 @@ After applying that chart, it took a few minutes to come up, but then was operat
 ❯ kubectl apply -f postgres-cluster.yaml -n keycloak
 cluster.postgresql.cnpg.io/keystore-pg created
 
-❯ k8 cnpg status keystore-pg -n keycloak
+❯ kubectl cnpg status keystore-pg -n keycloak
 Cluster Summary
 Name                 default/keystore-pg
 System ID:           7538142671149060124
@@ -63,7 +63,7 @@ keystore-pg-3  0/6000060    Standby (async)   OK      BestEffort  1.27.0        
 Once the cluster is up and running, it can be quickly deleted with:
 
 ```
-❯ k8 delete Cluster keystore-pg -n keycloak
+❯ kubectl delete Cluster keystore-pg -n keycloak
 cluster.postgresql.cnpg.io "keystore-pg" deleted
 ```
 
@@ -157,7 +157,7 @@ spec:
 Now the database is named `keycloak` and other DB options have been set:
 
 ```
-❯ k8 cnpg psql keycloak-pg -n keycloak
+❯ kubectl cnpg psql keycloak-pg -n keycloak
 psql (17.5 (Debian 17.5-1.pgdg110+1))
 Type "help" for help.
 
@@ -187,7 +187,7 @@ From outside of the cluster, you can port forward port 5432 to one of these serv
 
 ```sh
 # First Port-forward in another terminal using:
-#   k8 -n keycloak port-forward service/keycloak-pg-rw 5432:5432
+#   kubectl -n keycloak port-forward service/keycloak-pg-rw 5432:5432
 ❯ psql -h localhost -U keycloak
 Password for user keycloak:
 psql (14.17 (Homebrew), server 17.5 (Debian 17.5-1.pgdg110+1))
@@ -269,11 +269,47 @@ So, you can see the minor and major upgrade paths now use the same mechanism to 
 
 ## Database backups
 
-CloudNativePG now supports both [hot and cold backups](https://cloudnative-pg.io/documentation/1.27/backup/). For hot backups, it supports both a CNGP-I plugin to use external backup systems like Barman to backup to an object store, or CSI Volume snapshots.  For this initial use case, it is simplest to focus on [volume snapshots](https://cloudnative-pg.io/documentation/1.27/appendixes/backup_volumesnapshot/) for the backup and WAL files. By default, the backup uses online hot snapshots, which should work great for us. Once a backup has been completed, we will need to work to be sure the volume snapshot is preserved for an appropriate retention time.
+CloudNativePG now supports both [hot and cold backups](https://cloudnative-pg.io/documentation/1.27/backup/). For hot backups, it supports both a CNGP-I plugin to use external backup systems like Barman to backup to an object store, or CSI Volume snapshots.  For this initial use case, it is simplest to focus on [volume snapshots](https://cloudnative-pg.io/documentation/1.27/appendixes/backup_volumesnapshot/) for the backup and WAL files. By default, the backup uses online hot snapshots, which should work great for us. Once a backup has been completed, we will need to work to be sure the volume snapshot is preserved for an appropriate retention time, which we have done through our CSI volume backups on the Ceph cluster.
 
 Because backups can be intensive, we can request that backups be made against a replica service rather than the primary, which reduces load on the rw service.
 
-Configuration involves providing an instance of the `ScheduledBackup` resource. A typical configuration might look like this:
+Before you can configure a backup, you must ensure that your cluster definition identifies the VolumeSnapshotClass to be used to make backups. For example, on the dev cluster, list these with:
+
+```
+❯ kubectl get volumesnapshotclasses
+NAME                         DRIVER                DELETIONPOLICY   AGE
+csi-cephfsplugin-snapclass   cephfs.csi.ceph.com   Delete           2y40d
+csi-rbdplugin-snapclass      rbd.csi.ceph.com      Delete           2y20d
+```
+
+and then you can configure your database to use one of these snapshot classes for backups:
+
+
+
+```yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: keycloakx-cnpg
+spec:
+  instances: 3
+  bootstrap:
+    initdb:
+      database: keycloak
+      encoding: UTF8
+      localeProvider: icu
+      icuLocale: en_US
+      localeCType: en_US.UTF-8
+      localeCollate: en_US.UTF-8
+  storage:
+    storageClass: cephfs-sc-ephemeral
+    size: 101Gi
+  backup:
+    volumeSnapshot:
+      className: csi-cephfsplugin-snapclass
+```
+
+To generate a backup, you can either create a single instance of the `Backup` class, or you can create a `ScheduledBackup`, which creates a `Backup` for you on a cron schedule. Here we'll show an example of creating a scheduled backup, which will create a volume snapshot once a day. Configuration involves providing an instance of the `ScheduledBackup` resource. A typical configuration might look like this:
 
 ```yaml
 apiVersion: postgresql.cnpg.io/v1
@@ -281,12 +317,26 @@ kind: ScheduledBackup
 metadata:
   name: keycloak-pg-backup
 spec:
-  schedule: "0 0 0 * * *"  # At midnight every day
+  schedule: "0 0 21 * * *"  # At 9pm every day
   backupOwnerReference: self
   cluster:
     name: keycloak-pg
   method: volumeSnapshot
 ```
+
+Once that `ScheduledBackup` resources exists, it will be run on the provided schedule. You can list your ScheduledBackups, and the resulting `Backup` entries that are created each time it is run. For example,
+
+```
+❯ kubectl -n keycloak get scheduledbackups
+NAME                         AGE   CLUSTER          LAST BACKUP
+keycloakx-scheduled-backup   17m   keycloakx-cnpg   17m
+❯ kubectl -n keycloak get backups
+NAME                                        AGE   CLUSTER          METHOD           PHASE       ERROR
+keycloakx-cnpg-backup                       28m   keycloakx-cnpg   volumeSnapshot   completed
+keycloakx-scheduled-backup-20251106044736   17m   keycloakx-cnpg   volumeSnapshot   completed
+```
+
+The name of each backup (e.g., `keycloakx-scheduled-backup-20251106044736`) can be used to initiate a recovery process to create a new cluster from the snapshot volume associated with the backup. The metadata about the Backup (using `kubectl describe`) will list the details of the volume that was created, along with postgres details such as the Beginning and end LSN, and beginngin and end WAL file for the backup. The `VolumeSnapshot` that is created will likely have the same name as the backup and will also have many of these metadata details as well.
 
 ## Migrating from an existing database
 
