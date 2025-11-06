@@ -315,13 +315,14 @@ To generate a backup, you can either create a single instance of the `Backup` cl
 apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
-  name: keycloak-pg-backup
+  name: keycloakx-scheduled-backup
 spec:
-  schedule: "0 0 21 * * *"  # At 9pm every day
-  backupOwnerReference: self
   cluster:
-    name: keycloak-pg
+    name: keycloakx-cnpg
   method: volumeSnapshot
+  backupOwnerReference: self
+  schedule: '0 0 21 * * *' # At 9pm every day
+  immediate: true
 ```
 
 Once that `ScheduledBackup` resources exists, it will be run on the provided schedule. You can list your ScheduledBackups, and the resulting `Backup` entries that are created each time it is run. For example,
@@ -336,7 +337,7 @@ keycloakx-cnpg-backup                       28m   keycloakx-cnpg   volumeSnapsho
 keycloakx-scheduled-backup-20251106044736   17m   keycloakx-cnpg   volumeSnapshot   completed
 ```
 
-The name of each backup (e.g., `keycloakx-scheduled-backup-20251106044736`) can be used to initiate a recovery process to create a new cluster from the snapshot volume associated with the backup. The metadata about the Backup (using `kubectl describe`) will list the details of the volume that was created, along with postgres details such as the Beginning and end LSN, and beginngin and end WAL file for the backup. The `VolumeSnapshot` that is created will likely have the same name as the backup and will also have many of these metadata details as well.
+The name of each backup (e.g., `keycloakx-scheduled-backup-20251106044736`) can be used to initiate a recovery process to create a new cluster from the snapshot volume associated with the backup. The metadata about the Backup (using `kubectl describe`) will list the details of the volume that was created, along with postgres details such as the Beginning and end LSN, and beginning and end WAL file for the backup. The `VolumeSnapshot` that is created will likely have the same name as the backup and will also have many of these metadata details as well.
 
 ## Recovering from a Backup
 
