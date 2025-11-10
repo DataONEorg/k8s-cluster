@@ -1,12 +1,11 @@
 # RabbitMQ Cluster Operator
 
-## RabbitMQ Cluster Operator Defaults
-
-The operator was installed without overriding any of the [default environment variables](https://www.rabbitmq.com/kubernetes/operator/configure-operator-defaults#parameters). Most notably, this means that the Operator: 
-- watches all namespaces for RabbitMQCluster resources (`OPERATOR_SCOPE_NAMESPACE`).
-- uses the latest RabbitMQ container image available at time of release for new Pods (`DEFAULT_RABBITMQ_IMAGE`).
-- does not control image version upgrades. The user is responsible for updating RabbitmqCluster image (`CONTROL_RABBITMQ_IMAGE`).
-
+> [!NOTE]
+> 
+> Since the operator was installed without overriding any of the [default environment variables](https://www.rabbitmq.com/kubernetes/operator/configure-operator-defaults#parameters), this means that the Operator: 
+> - uses the LATEST RabbitMQ container image available at time of release for new Pods (`DEFAULT_RABBITMQ_IMAGE`).
+> - DOES NOT CONTROL IMAGE VERSION UPGRADES. The user is responsible for updating RabbitmqCluster image (`CONTROL_RABBITMQ_IMAGE`).
+> - Deletes PVCs when uninstalling, despite using a `statefulset` (although retention is coming: [see this bug](https://github.com/rabbitmq/cluster-operator/issues/1992))
 
 ### The `kubectl rabbitmq` plugin
 
