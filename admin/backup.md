@@ -137,6 +137,12 @@ velero backup-location get default -o yaml
 kubectl edit -n velero BackupStorageLocation
 ```
 
+### Change Target Access Keys
+```
+kubectl get secrets cloud-credentials -n velero -o json | jq -r '.data.cloud' | base64 --decode
+kubectl edit secrets cloud-credentials -n velero
+```
+
 
 ## Finding volumes to exclude
 
