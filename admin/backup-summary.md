@@ -26,6 +26,6 @@ See [backup.md](backup.md) for details of how backup software is installed & con
 
 [^2]: In the dev cluster, some ceph subvolumes are backed up via rsync. Some ae not backed up at all. See the [Server Backup List](https://docs.google.com/spreadsheets/d/1xFOFQ1lF90BoFLYRkpBRSNj5QqVyfG2DLnwc1znaNI4/edit?usp=sharing) for details.
 
-[^3]: We’re using the S3 API with our own Object Storage server `s3.anacapa.nceas.ucsb.edu` for backups (currently MinIO on top of ZFS, probably changing soon).
+[^3]: We’re using the S3 API with our secondary Object Storage server `s3.nceas.ucsb.edu` for backups (NCEAS-Ceph RGW cluster in the NDHC), which is then copied to a ZFS server located at NCEAS' downtown office.
 
 [^4]: K8s admins can do a full or partial `velero restore` ([by using filtering options](https://velero.io/docs/main/resource-filtering/)).
