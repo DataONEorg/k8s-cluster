@@ -8,6 +8,8 @@ See [backup.md](backup.md) for details of how backup software is installed & con
 
 * CephFS Snapshots on the `pdg` subvolume (`datateam:/mnt/ceph/.snap/`) are retained for only 30 days. However, Restic backs these up at the same (36 monthly, 90 nightly) frequency.
 
+* Critical Prod static CephFS volumes are also backed up to Amazon Glacier. (Some Velero backups will also be added to this list)
+
 
 > [!WARNING]
 >
