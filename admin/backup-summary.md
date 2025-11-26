@@ -13,7 +13,7 @@ See [backup.md](backup.md) for details of how backup software is installed & con
 
 > [!WARNING]
 >
-> Velero can not back up static PVs or PVCs, since it depends upon CSI snapshots, and Ceph-csi doesn't currently support snapshots for static volumes
+> Velero can not back up static PVs or PVCs, since it depends upon CSI snapshots, and Ceph-csi [doesn't currently support snapshots for static volumes](https://github.com/ceph/ceph-csi/blob/devel/docs/static-pvc.md)
 
 
 |                                  | Cluster    | What's Backed Up?                                      | Backup Method                 | Backup Location             | Recovery                     |
