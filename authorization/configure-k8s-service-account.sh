@@ -62,7 +62,7 @@ create_namespace() {
 }
 
 create_service_account() {
-    if [ $(kubectl get sa --namespace ${NAMESPACE} | grep -c "${SERVICE_ACCOUNT_NAME}") -eq 0 ]; then
+    if [ $(kubectl get sa --namespace ${NAMESPACE} ${SERVICE_ACCOUNT_NAME} -oname | wc -l) -eq 0 ]; then
         echo -e "\\nCreating a service account in ${NAMESPACE} namespace: ${SERVICE_ACCOUNT_NAME}"
         kubectl create sa "${SERVICE_ACCOUNT_NAME}" --namespace "${NAMESPACE}" --save-config
     else
