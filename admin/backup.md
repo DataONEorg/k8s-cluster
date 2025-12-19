@@ -143,6 +143,12 @@ kubectl get secrets cloud-credentials -n velero -o json | jq -r '.data.cloud' | 
 kubectl edit secrets cloud-credentials -n velero
 ```
 
+### Add a backups storage location
+- Create a new secret based on the default velero `cloud-credentials` 
+- Create a new backup-location
+```
+velero backup-location create k8s-dev-ro --provider aws --bucket k8s-dev --config region=default,s3Url=https://s3.nceas.ucsb.edu,s3ForcePathStyle=true --access-mode=ReadOnly --credential cloud-credentials-dev=cloud
+```
 
 ## Finding volumes to exclude
 
@@ -179,5 +185,7 @@ $ kubectl describe pv cephfs-repos-rom | grep Labels:
 Labels:          velero.io/exclude-from-backup=true
 ```
 
+
 ## Monitoring
 Check_MK is monitoring the backup status and will send alerts if backups are not completed successfully.
+
