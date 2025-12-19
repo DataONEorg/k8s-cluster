@@ -145,6 +145,11 @@ kubectl edit secrets cloud-credentials -n velero
 
 ### Add a backups storage location
 - Create a new secret based on the default velero `cloud-credentials` 
+```
+ kubectl get secrets cloud-credentials -n velero -o yaml
+```
+    - Change the credential name, ex: cloud-credentials-dev
+    - Remove `uid`, `resourceVersion`, `creationTimestamp`
 - Create a new backup-location
 ```
 velero backup-location create k8s-dev-ro --provider aws --bucket k8s-dev --config region=default,s3Url=https://s3.nceas.ucsb.edu,s3ForcePathStyle=true --access-mode=ReadOnly --credential cloud-credentials-dev=cloud
