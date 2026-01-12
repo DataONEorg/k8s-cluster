@@ -17,7 +17,7 @@ k8s-node-123    Ready    <none>                 362d    v1.23.4
 k8s-node-2      Ready    <none>                 2y96d   v1.23.4
 k8s-node-3      Ready    <none>                 2y96d   v1.23.4
 
-$ kubectl drain k8s-node-123 --ignore-daemonsets --delete-emptydir-data --force --disable-eviction=true
+$ kubectl drain k8s-node-123 --ignore-daemonsets --delete-emptydir-data --force --disable-eviction
 ```
 
 Reboot the drained node:
