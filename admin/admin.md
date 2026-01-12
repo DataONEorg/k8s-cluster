@@ -8,17 +8,16 @@ Up to: [DataONE Cluster Overview](../cluster-overview.md)
 #### Nodes
 To reboot a node, first drain the node, reboot, then add the node back:
 ```bash
-$ ssh metadig@k8s-ctrl-1.dataone.org
-metadig@docker-ucsb-4:~$ kubectl config use-context prod-k8s   # Update ~metadig/.kube/config if this fails
+$ kubectl config use-context prod-k8s   # Update ~metadig/.kube/config if this fails
 
-metadig@docker-ucsb-4:~$ kubectl get nodes
+$ kubectl get nodes
 NAME            STATUS   ROLES                  AGE     VERSION
 docker-ucsb-4   Ready    control-plane,master   2y97d   v1.23.4
 k8s-node-123    Ready    <none>                 362d    v1.23.4
 k8s-node-2      Ready    <none>                 2y96d   v1.23.4
 k8s-node-3      Ready    <none>                 2y96d   v1.23.4
 
-metadig@docker-ucsb-4:~$ kubectl drain k8s-node-123 --ignore-daemonsets --delete-emptydir-data --force
+$ kubectl drain k8s-node-123 --ignore-daemonsets --delete-emptydir-data --force --disable-eviction=true
 ```
 
 Reboot the drained node:
@@ -29,7 +28,7 @@ outin@k8s-node-123:~$ sudo reboot
 
 Add the node back:
 ```bash
-kubectl uncordon k8s-node-123
+$ kubectl uncordon k8s-node-123
 ```
 
 #### Controllers
