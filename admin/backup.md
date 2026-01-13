@@ -33,8 +33,11 @@ kubectl -n velero logs deploy/velero
 
 ### Create automatic backup schedules
 ```
-velero schedule create full-backup --schedule="0 3 * * *" --ttl 2160h0m0s --snapshot-move-data
-velero schedule create full-backup-monthly --schedule="0 15 1 * *" --ttl 26280h0m0s --snapshot-move-data
+velero schedule create k8s-dev-full-daily --schedule="0 3 * * *" --ttl 2160h0m0s --snapshot-move-data
+velero schedule create k8s-dev-full-monthly --schedule="0 15 1 * *" --ttl 26280h0m0s --snapshot-move-data
+
+velero schedule create k8s-prod-full-daily --schedule="0 4 * * *" --ttl 2160h0m0s --snapshot-move-data
+velero schedule create k8s-prod-full-monthly --schedule="0 16 1 * *" --ttl 26280h0m0s --snapshot-move-data
 ```
 
 
