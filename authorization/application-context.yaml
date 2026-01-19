@@ -182,7 +182,7 @@ rules:
 
   - apiGroups: [ "postgresql.cnpg.io" ]
     resources: [ "backups", "scheduledbackups" ]
-    verbs: [ "list", "get", "create", "delete" ]
+    verbs: [ "list", "get", "create", "patch", "delete" ]
 
   - apiGroups: [ "postgresql.cnpg.io" ]
     resources: [ "poolers" ]
