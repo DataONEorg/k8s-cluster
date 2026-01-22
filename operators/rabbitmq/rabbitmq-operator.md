@@ -91,6 +91,14 @@ $ kubectl rabbitmq perf-test myreleasermq
 ```
 ...and see it in action, in the management console web UI.
 
+## Upgrading Instances
+
+The operator can be configured to perform rolling upgrades of instances whenever the operator itself is upgraded (see next section). However, as of Jan 2026, that functionality is marked "Experimental", and no compatibility checks are performed before upgrades. We Therefore have not enabled this functionality yet, and individual RMQ cluster instances must be upgraded by editing the RabbitmqCluster resource to change the image version, which will then prompt the StatefulSet to do a rolling upgrade of the RMQ node(s) in that cluster:
+
+```shell
+kc edit RabbitmqCluster <cluster-name>
+```
+See [detailed instructions in the RMQ Docs](https://www.rabbitmq.com/docs/rolling-upgrade#example)
 
 ## RabbitMQ Cluster Operator Installation/Upgrade
 
