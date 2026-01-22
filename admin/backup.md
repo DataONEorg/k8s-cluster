@@ -77,8 +77,8 @@ velero install \
   --provider aws \
   --plugins velero/velero-plugin-for-aws:v1.12.0 \
   --bucket k8s-prod \
-  --secret-file /Users/outin/.aws/minio-k8s-prod \
-  --backup-location-config region=default,s3Url=https://s3.anacapa.nceas.ucsb.edu,s3ForcePathStyle=true \
+  --secret-file /Users/outin/.aws/k8s-prod \
+  --backup-location-config region=default,s3Url=https://s3.nceas.ucsb.edu,s3ForcePathStyle=true \
   --snapshot-location-config region=default \
   --use-node-agent \
   --use-volume-snapshots=true \
@@ -94,7 +94,7 @@ velero install \
   --plugins velero/velero-plugin-for-aws:v1.12.0 \
   --bucket k8s-dev \
   --secret-file /Users/outin/.aws/velero \
-  --backup-location-config region=default,s3Url=https://s3.anacapa.nceas.ucsb.edu,s3ForcePathStyle=true \
+  --backup-location-config region=default,s3Url=https://s3.nceas.ucsb.edu,s3ForcePathStyle=true \
   --snapshot-location-config region=default \
   --use-node-agent \
   --use-volume-snapshots=true \
