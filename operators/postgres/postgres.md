@@ -503,7 +503,8 @@ Once the pooler is running, you'll need to modify your JDBC url (if using) to po
 
 To check that your pooler is working correctly, you can exec into the pod in the usual way and examine the pgbouncer database by just running `psql` inside the pod. From there, the queries `SHOW POOLS`, `SHOW CLIENTS` and `SHOW STATS` are available.
 
-
+> [!CAUTION]
+> You may run into authentication problems if you are overriding `pg_hba.conf` settings and not using `scram-sha-256`.
 
 ## CloudNativePG Operator Installation
 
