@@ -34,7 +34,7 @@ For dynamically provisioned PVs, a PV object manifest is not required.
 
 Once the SC has been created, a PVC can be created that references the SC. When a pod references the PVC, the storage driver will then call it's storage provisioner that will search for a volume SC that satisfies the PVC request, and then the PV will be created for the pod.
 
-Dynamically created PVs will persist as long as the PVC that referenced it exists. Once the PVC is deleted, the referenced PV is deleted. However, if the SC was configured such that the created volume is retained, the underlying storage is not erased and can be manually accessed.
+Dynamically created PVs will persist as long as the PVC that referenced it exists. Once the PVC is deleted, the referenced PV is deleted. However, if the SC was configured such that the created volume is retained, the underlying storage is not erased, and can be manually accessed. To clean up the storage, see ([Deleting the Underlying Storage for a Dynamic PV](#deleting-the-underlying-storage-for-a-dynamic-pv))
 
 An example of dynamic provisioning is described in [Ceph-CSI RBD](./Ceph/Ceph-CSI-RBD.md). 
 
@@ -129,4 +129,53 @@ Some extended attributes from ceph that may be of use include:
 For information regarding recovering data from Ceph based persistent volumes in the event of PV deletion or other problem, see [Data Recovery](./data-recovery.md)
 
 
+## Deleting the Underlying Storage for a Dynamic PV 
+
+As stated above: if a PV's `storageClass` was configured with a `persistentVolumeReclaimPolicy` of `Retain`, the underlying storage is not erased when the PV is deleted. This leads to unused, "orphaned" data filling up our storage, which should be avoided.
+
+1. BEFORE helm uninstalling or deleting the PVCs, find the names of the dynamically-created PVs (it works afterwards too, but harder to find the PV name):
+
+   ```shell
+   $ kc get pvc
+
+   NAME                    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS    AGE
+   vegbankdb2-cnpg-1       Bound    pvc-5d62db06-4cc3-44b4-be16-b09250c97f36   100Gi      RWO            csi-cephfs-sc   42d
+
+   ## (see VOLUME column above. Note that the PVs are named pvc-*)
+   ##
+   ## it is set to Retain:
+   ##
+   $ kc get pv --context=dev-k8s pvc-5d62db06-4cc3-44b4-be16-b09250c97f36
+
+   NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                             STORAGECLASS    REASON   AGE
+   pvc-5d62db06-4cc3-44b4-be16-b09250c97f36   100Gi      RWO            Retain           Bound    vegbank/vegbankdb2-cnpg-1   csi-cephfs-sc            42d
+   ```
+
+2. Patch to change `persistentVolumeReclaimPolicy` to `Delete`, using:
+
+   `kubectl patch pv <pv-name> --patch '{"spec":{"persistentVolumeReclaimPolicy":"Delete"}}'`
+  
+   e.g.:
+
+   ```shell
+   $ kubectl patch pv --context=dev-k8s pvc-5d62db06-4cc3-44b4-be16-b09250c97f36 \
+         --patch '{"spec":{"persistentVolumeReclaimPolicy":"Delete"}}'
+
+   persistentvolume/pvc-5d62db06-4cc3-44b4-be16-b09250c97f36 patched
+   ```
+
+   
+   check it worked:
+   
+   ```shell
+   $ kc get pv --context=dev-k8s pvc-5d62db06-4cc3-44b4-be16-b09250c97f36
+
+   NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                       STORAGECLASS    REASON   AGE
+   pvc-5d62db06-4cc3-44b4-be16-b09250c97f36   100Gi      RWO            Delete           Bound    vegbank/vegbankdb2-cnpg-1   csi-cephfs-sc            42d
+   ```
+
+3. Now continue with your helm uninstall or delete the PVCs. The data should be deleted automatically
+
+> [!CAUTION]
+> Exercise care and double-check you're deleting the right things in the right context!
 
