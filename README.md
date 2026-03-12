@@ -61,6 +61,7 @@ Documentation is organized into an overview, and then separate config files and 
   - [Dynamically Provisioned Persistent Volumes](./storage/storage.md#Dynamically-Provisioned-Persistent-Volumes)
 - [Ceph-based Volumes](./storage/storage.md#Ceph-based-Volumes)
 - [Data Recovery](./storage/storage.md#Data-Recovery)
+- [Deleting the Underlying Storage for a Dynamic PV](./storage/storage.md#deleting-the-underlying-storage-for-a-dynamic-pv)
 
 ### [Ceph CSI](./storage/Ceph/Ceph-CSI.md#)
 - [Installing Ceph CSI RBD Plugin](./storage/Ceph/Ceph-CSI.md#Installing-Ceph-CSI-RBD-Plugin)
