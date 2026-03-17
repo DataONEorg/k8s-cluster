@@ -30,6 +30,7 @@ Documentation is organized into an overview, and then separate config files and 
 ## [Application Authorization](./authorization/authorization.md)
 - [Create The kubectl Configuration File](./authorization/authorization.md#Create-The-kubectl-Configuration-File)
 - [Grant Additional Privileges To The serviceAccount](./authorization/authorization.md#Grant-Additional-Privileges-To-The-serviceAccount)
+- [Providing Limited Access - e.g. Read-Only for Logs](./authorization/limited-access/README.md)
 - [References](./authorization/authorization.md#References)
 
 ## [Control Plane Configuration](./control-plane/control-plane.md)
