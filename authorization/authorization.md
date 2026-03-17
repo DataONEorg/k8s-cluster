@@ -85,6 +85,10 @@ similar to those for `Role` `RoleBinding`, above. Please save copies of the yaml
 [custom-rolebindings](./custom-rolebindings) directory, and update the [custom-rolebindings.md
 file](./custom-rolebindings) with instructions.
 
+### Providing Limited Access - e.g. Read-Only for Logs
+
+See the instructions in the [Limited Access README file](https://github.com/DataONEorg/k8s-cluster/blob/main/authorization/limited-access/README.md)
+
 ## Client Setup
 
 From the user's perspective, the following initial setup is required upon receiving a copy of the kubectl configuration file:
