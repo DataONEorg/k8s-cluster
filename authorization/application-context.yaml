@@ -186,4 +186,4 @@ rules:
 
   - apiGroups: [ "postgresql.cnpg.io" ]
     resources: [ "poolers" ]
-    verbs: [ "get" ]
+    verbs: [ "list", "get", "create", "patch", "delete" ]
