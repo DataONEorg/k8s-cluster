@@ -1,0 +1,10 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  ## Use name: limited:$SERVICE_ACCOUNT -- and it's OK to hard-code $SERVICE_ACCOUNT name,
+  ## since this is a custom ClusterRole used only for that SA
+  name: limited:log-reader-shared
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch"]
