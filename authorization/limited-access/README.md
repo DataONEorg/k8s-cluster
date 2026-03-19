@@ -53,7 +53,7 @@ For **each type of shared access** (e.g. log-reader-shared, etc) in each cluster
     ```
 
 > [!IMPORTANT]
-> When creating a new secret, use it to create a corresponding kube congig file, and save **a gpg-encrypted copy** in the security repo. See [config-example-prod](./config-example-prod) as an example
+> When creating a new secret, use it to create a corresponding kube congig file, and save **a gpg-encrypted copy** in the security repo. See [config-example-prod](./config-example-prod) as an example. Give a copy to whoever needs access, and give them the [link to the Client Setup instructions](https://github.com/DataONEorg/k8s-cluster/blob/main/authorization/authorization.md#client-setup)
 
 2. Global `ClusterRole` with the Appropriate Permissions
 
