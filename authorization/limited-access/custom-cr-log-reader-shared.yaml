@@ -1,8 +1,16 @@
+## This ClusterRole is used by the 'log-reader-shared' ServiceAccount, which is shared by multiple
+## users for the purpose of reading logs across multiple namespaces.
+## Copy and edit this file when creating new ClusterRoles for other shared ServiceAccounts. When
+## creating a new file:
+## - Name the file with the convention: 'custom-cr-<service-account-name>.yaml', and commit to this
+##   same directory in GH.
+## - Set a metadata.name with the pattern: 'limited:my-ServiceAccount-name' (it's OK to hard-code
+##   the ServiceAccount name here, since this is a custom ClusterRole used only for that SA).
+## - Set the rules to grant ONLY the permissions needed for the intended use case of the SA.
+##
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  ## Use name: limited:$SERVICE_ACCOUNT -- and it's OK to hard-code $SERVICE_ACCOUNT name,
-  ## since this is a custom ClusterRole used only for that SA
   name: limited:log-reader-shared
 rules:
   - apiGroups: [""]

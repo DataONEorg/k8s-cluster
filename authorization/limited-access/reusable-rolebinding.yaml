@@ -1,13 +1,35 @@
+## This RoleBinding binds a shared ServiceAccount in the 'shared' namespace to a ClusterRole that
+## can access resources in the target namespace.
+## This RoleBinding template can be used to bind a shared ServiceAccount in the 'shared' namespace
+## to any appropriately-named ClusterRole that grants permissions in any target namespace.
+## To use this RoleBinding, replace the variables in the template with appropriate values:
+## - ${SERVICE_ACCOUNT} = name of shared SA (in 'shared' namespace)
+## - $TARGET_NAMESPACE = name of target namespace where access is being granted
+## Prerequisite:
+## - A ServiceAccount named: ${SERVICE_ACCOUNT} in the 'shared' namespace (e.g. 'log-reader-shared')
+## - A ClusterRole named: 'limited:$SERVICE_ACCOUNT' (e.g. 'limited:log-reader-shared')
+## Output:
+## - A RoleBinding named: "${SERVICE_ACCOUNT}-rb" in the target namespace that grants the shared
+##   ServiceAccount permissions defined in the ClusterRole.
+##
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: "${SERVICE_ACCOUNT}-rb"   # Name of shared SA in the shared namespace
-  namespace: "$TARGET_NAMESPACE"  # Target namespace where access is being granted
+  ## ${SERVICE_ACCOUNT} = name of shared SA (in 'shared' namespace)
+  name: "${SERVICE_ACCOUNT}-rb"
+  ## Target namespace where access is being granted
+  namespace: "$TARGET_NAMESPACE"
+
 subjects:
   - kind: ServiceAccount
-    name: "$SERVICE_ACCOUNT"      # Name of shared SA
-    namespace: shared             # The namespace where the shared SA actually exists
+    ## Name of shared SA (in the 'shared' namespace)
+    name: "$SERVICE_ACCOUNT"
+    ## The namespace where the shared SA actually exists
+    namespace: shared
+
 roleRef:
   kind: ClusterRole
+  ## Name given to the custom ClusterRole that grants limited permissions
+  ## (e.g. 'limited:log-reader-shared')
   name: "limited:${SERVICE_ACCOUNT}"
   apiGroup: rbac.authorization.k8s.io

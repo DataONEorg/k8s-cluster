@@ -1,8 +1,34 @@
-# DO NOT COMMIT SECRETS TO THIS REPO!
-# Example filename for read-only log access on prod:
-# config-logs-prod
-# fill in the blanks, GPG ENCRYPT, and add to our security repo
-#
+####################################################################################################
+## NEVER COMMIT SECRETS TO PUBLIC GIT REPOSITORIES!
+## After generating a token, add it to a new kubeconfig file and push a GPG ENCRYPTED copy to our
+## private security repo
+####################################################################################################
+##
+## This template is an example of a kubeconfig file that can be used to access the cluster with
+## limited permissions, by authenticating as a shared ServiceAccount with a the 'users.user.token'
+## below.
+## The kubeconfig file should be kept GPG ENCRYPTED in the private security repo, and provided to
+## users approved for limited access.
+##
+## Prerequisite:
+## - A Secret named: "${SERVICE_ACCOUNT}-secret" in the 'shared' namespace
+##   (e.g. 'log-reader-shared-secret')
+##
+## To use this template:
+## 1. Make a copy and name it 'config-<access-description>-prod', where <access-description> is a
+##    short descriptor of the access provided, and 'prod' is the cluster; e.g. 'config-logs-prod'
+## 2. Replace <PROD-CLUSTER-CA-HERE> with the base64-ENCODED CA certificate data for the target
+##    cluster, obtained from the 'ca.crt' field of the ServiceAccount Secret. Example for Secret
+##    'log-reader-shared-secret':
+##      $  kubectl get secret log-reader-shared-secret -n shared -o jsonpath='{.data.ca\.crt}'
+## 3. Replace <NEW-SA-NAME-HERE> with the ServiceAccount name (2 locations)
+## 4. Replace <NEW-SA-TOKEN-HERE> with the base64-DECODED ServiceAccount token, obtained from the
+##    'token' field of the ServiceAccount Secret. Example for Secret 'log-reader-shared-secret':
+##   $ kubectl get secret log-reader-shared-secret -n shared -o jsonpath='{.data.token}' | base64 -d
+## 5. GPG ENCRYPT the file and add it to the private security repo. Distribute to approved users,
+##    along with the Client Setup instructions:
+##   https://github.com/DataONEorg/k8s-cluster/blob/main/authorization/authorization.md#client-setup
+##
 apiVersion: v1
 clusters:
 - cluster:
