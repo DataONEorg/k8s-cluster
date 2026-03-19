@@ -52,6 +52,9 @@ For **each type of shared access** (e.g. log-reader-shared, etc) in each cluster
     cat ./reusable-sa-token.yaml | SERVICE_ACCOUNT=${SERVICE_ACCOUNT_NAME} envsubst | kubectl apply -f -
     ```
 
+> [!IMPORTANT]
+> When creating a new secret, use it to create a corresponding kube congig file, and save **a gpg-encrypted copy** in the security repo. See [config-example-prod](./config-example-prod) as an example
+
 2. Global `ClusterRole` with the Appropriate Permissions
 
    - Create a new yaml file with the appropriate permissions. Note that it's OK to hard-code the $SERVICE_ACCOUNT name, since this is a custom ClusterRole used only for that particular SA. Example:
