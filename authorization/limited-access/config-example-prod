@@ -1,0 +1,24 @@
+# DO NOT COMMIT SECRETS TO THIS REPO!
+# Example filename for read-only log access on prod:
+# config-logs-prod
+# fill in the blanks, GPG ENCRYPT, and add to our security repo
+#
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: <PROD-CLUSTER-CA-HERE>
+    server: https://128.111.85.192:6443
+  name: prod-dataone
+contexts:
+- context:
+    cluster: prod-dataone
+    namespace: shared
+    user: <NEW-SA-NAME-HERE>
+  name: prod-shared
+current-context: prod-shared
+kind: Config
+preferences: {}
+users:
+- name: <NEW-SA-NAME-HERE>
+  user:
+    token: <NEW-SA-TOKEN-HERE>
