@@ -1,0 +1,110 @@
+## dev cluster values overrides for installing the Traefik ingress controller
+##
+## Add repo with:
+## $ helm repo add traefik https://traefik.github.io/charts
+##
+## Install with:
+## $ helm upgrade --install traefik traefik/traefik \
+##  --version 39.0.6 \
+##  --namespace traefik \
+##  --create-namespace \
+##  -f values-dev-overrides-traefik.yml
+##
+
+# Enable NGINX Annotation Translation
+providers:
+  kubernetesIngressNginx:
+    enabled: true
+
+# Service Type (chart uses LoadBalancer by default)
+service:
+  type: ClusterIP
+
+# Trust Forwarded Headers on entrypoints (to preserve client IP)
+ports:
+  web:
+    # Force the container (and thus the host) to bind to 80 instead of 8000
+    port: 80
+    forwardedHeaders:
+      insecure: true
+  websecure:
+    # Force the container (and thus the host) to bind to 443 instead of 8443
+    port: 443
+    forwardedHeaders:
+      insecure: true
+
+  # Shift the Traefik API/Dashboard port to avoid 8080 collision with ceph
+  traefik:
+    port: 8888
+    exposedPort: 8888
+
+## Enable the Traefik API/Dashboard
+##
+api:
+  # -- Enable the dashboard
+  dashboard: true
+  # -- Enable the insecure API (HTTP)
+  insecure:  true
+  # -- Enable the debug API
+  debug:  true
+  # -- Configure API basePath
+  basePath: "" # default: "/"
+
+logs:
+  access:
+    enabled: true
+    ## Set access log format (https://doc.traefik.io/traefik/observability/access-logs/#format)
+    ## @schema enum:["common", "genericCLF", "json", null]; type:[string, null]; default: "common"
+    format: json
+    fields:
+      headers:
+        defaultmode: drop
+        names:
+          X-Forwarded-For: keep
+          X-Real-Ip: keep
+          Forwarded: keep
+
+   ## Send to Nick's log aggregator:
+#  otlp:
+#    http:
+#      endpoint: http://128.111.85.44:514/
+#
+## Send to Nick's log aggregator:
+#experimental:
+#  otlpLogs: true
+
+
+## WHEN WE DELETE ingress-nginx CONTROLLER: add this config to traefik values, so Traefik takes
+## ownership of the nginx class, thus picking up all existing manifests without modification
+##
+#ingressClass:
+#  enabled: true
+#  isDefaultClass: true
+#  name: nginx
+
+
+################ Begin hostNetwork mode Section ################
+## Run in hostNetwork mode to preserve client IP.
+## Enable hostNetwork mode:
+hostNetwork: true
+## (dnsPolicy is auto-set to ClusterFirstWithHostNet by the chart)
+##
+## Node Affinity & Tolerations needed for hostNetwork mode
+## Target node:
+nodeSelector:
+  kubernetes.io/hostname: "k8s-dev-node-5"
+tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+## Required to bind to privileged ports 80/443 in hostNetwork mode
+securityContext:
+  capabilities:
+    drop: [ALL]
+    add: [NET_BIND_SERVICE]
+  readOnlyRootFilesystem: true
+  runAsGroup: 0
+  runAsNonRoot: false
+  runAsUser: 0
+##
+################ End hostNetwork mode Section ################
