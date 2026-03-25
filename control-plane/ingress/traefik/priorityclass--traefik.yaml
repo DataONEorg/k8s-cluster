@@ -1,0 +1,8 @@
+apiVersion: scheduling.k8s.io/v1
+description: |
+  Used to stop the scheduler killing the ingress pod, if the node is under resource pressure. This
+  is a very high priority, so it will preempt any other pod if necessary.
+kind: PriorityClass
+metadata:
+  name: ingress-critical
+value: 1000000
