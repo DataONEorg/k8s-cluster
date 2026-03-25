@@ -33,7 +33,7 @@ The DataONE k8s Cluster uses the open source [Traefik proxy](https://github.com/
 > [!IMPORTANT]
 > Because we don't yet have an external load-balancer, and because we need access to the original client IP addresses, the Traefik proxy is currently installed in `hostNetwork` mode, meaning it is installed on a specific node, and bound to ports 80 & 443. This single-point-of-failure is not ideal, but it is a temporary solution until we have an external load balancer in place. Traefik can then be installed in `ClusterIP` mode, allowing us to run multiple pods across nodes. At that point, the following instructions should be updated accordingly.
 
-1. First create a PriorityClass object if it does not already exist, using the definition in [./ingress/traefik/priorityclass--traefik.yaml](./ingress/traefik/priorityclass--traefik.yaml). This ensures that the Traefik pod is never evicted from the target node, even if that node is under resource pressure (see [Kubernetes documentation](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption) for details):
+1. First create a `PriorityClass` object if it does not already exist, using the definition in [./ingress/traefik/priorityclass--traefik.yaml](./ingress/traefik/priorityclass--traefik.yaml). This ensures that the Traefik pod is never evicted from the target node, even if that node is under resource pressure (see [Kubernetes documentation](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption) for details):
 
     ```shell
     # check if exists:
