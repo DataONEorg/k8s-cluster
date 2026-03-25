@@ -32,8 +32,23 @@ ports:
     port: 443
     forwardedHeaders:
       insecure: true
+    transport:
+      ## Most Traefik defaults support long-lived uploads and upstream processing times without
+      ## adjustment:
+      ## - writeTimeout (EntryPoint): Default 0s (Unlimited). This governs the time from when the
+      ##                              request is fully read to when the response is fully written
+      ##                              back to the client.
+      ## - responseHeaderTimeout (ServersTransport): Default 0s (Unlimited). This governs how long
+      ##                              Traefik waits for the backend pod to send its first response.
+      ##
+      ## The only one we need to change is readTimeout - maximum time allowed to read the entire
+      ## client request (headers + body). Even if the upload is active, it will be cut off after
+      ## readTimeout expires. Once the file finishes uploading, this timer stops. Default: 60s
+      ##
+      respondingTimeouts:
+        readTimeout: 300s  # this is just for vegbank - we will probably need to change for metacat
 
-  # Shift the Traefik API/Dashboard port to avoid 8080 collision with ceph
+  # Change the Traefik API/Dashboard port (default 8080) to avoid collision with ceph
   traefik:
     port: 8888
     exposedPort: 8888
