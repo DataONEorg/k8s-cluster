@@ -128,3 +128,4 @@ Note that Traefik will continue to scan for ingress objects that match ingress c
 
 - Install an external load balancer, and configure Traefik to use `ClusterIP` mode, allowing us to run multiple pods across nodes, and remove the single-point-of-failure of the current `hostNetwork` mode.
 - Retire existing `ingress-nginx` ingress resources to use the `traefik` ingress class instead of `nginx`, adapting custom nginx configuration snippets and annotations to the Traefik equivalent as needed.
+- Move to the Kubernetes Gateway API instead of the Ingress spec. Traefik supports the Gateway API specification
