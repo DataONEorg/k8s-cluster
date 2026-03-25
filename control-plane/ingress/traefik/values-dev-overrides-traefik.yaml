@@ -46,7 +46,8 @@ ports:
       ## readTimeout expires. Once the file finishes uploading, this timer stops. Default: 60s
       ##
       respondingTimeouts:
-        readTimeout: 300s  # this is just for vegbank - we will probably need to change for metacat
+        ## 1hr to accommodate metacat uploads. This cannot be set per ingress, only globally here
+        readTimeout: 3600s
 
   # Change the Traefik API/Dashboard port (default 8080) to avoid collision with ceph
   traefik:
