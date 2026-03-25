@@ -44,7 +44,7 @@ The DataONE k8s Cluster uses the open source [Traefik proxy](https://github.com/
     kubectl create -f priorityclass--traefik.yaml
     ```
 
-2. Traefik may be installed or upgraded via the [official helm chart](https://github.com/traefik/traefik-helm-chart/releases), using the values overrides defined in [./ingress/traefik](./ingress/traefik) **(IMPORTANT: don't forget to set the correct values for `$CHART_VERSION` and `$TARGET_NODE`)**:
+2. Traefik may be installed or upgraded via the [official helm chart](https://github.com/traefik/traefik-helm-chart/releases), using the values overrides defined in [./ingress/traefik/values-overrides-traefik.yaml](./ingress/traefik/values-overrides-traefik.yaml) **(IMPORTANT: don't forget to set the correct values for `$CHART_VERSION` and `$TARGET_NODE`, below!)**:
 
     ```shell
     # example: to install:
