@@ -78,19 +78,31 @@ api:
   # -- Configure API basePath
   basePath: "" # default: "/"
 
+## For detailed configuration options, refer to the reference documentation:
+## https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs
 logs:
   access:
     enabled: true
     ## Set access log format (https://doc.traefik.io/traefik/observability/access-logs/#format)
     ## @schema enum:["common", "genericCLF", "json", null]; type:[string, null]; default: "common"
+    ##
     format: json
+    ## https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/#json-format-fields
+    ##
     fields:
+      general:
+        defaultmode: keep
+        names:
+          ## drop "local" timezone timestamp, since it is UTC, so is duplicated by "startUTC" in log
+          StartLocal: drop
       headers:
         defaultmode: drop
         names:
+          Forwarded: keep
+          Referer: keep
+          User-Agent: keep
           X-Forwarded-For: keep
           X-Real-Ip: keep
-          Forwarded: keep
 
    ## Send to Nick's log aggregator:
 #  otlp:
