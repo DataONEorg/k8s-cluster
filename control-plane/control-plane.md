@@ -26,6 +26,13 @@ Decribe etcd service configuration...
 
 ## Ingress Controller
 
+> [!IMPORTANT]
+> The Kubernetes Ingress NGINX Controller project has announced its retirement in March 2026. After this date there will be no new releases, updates, security patches, or bug fixes. We are therefor emoving to Traefik (pronounced "traffic") as an alternative ingress
+>
+> Traefik may be installed via the [official helm chart](https://github.com/traefik/traefik-helm-chart/releases), using the values overrides defined in [./ingress/traefik](./ingress/traefik)
+> 
+> ### The following information is therefore superseded and will be replaced
+
 The DataONE k8s Cluster uses the [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx) (NIC) to route traffic to k8s services from clients outside of the cluster. This is the community maintained version of the NGINX ingress controller, that is separate from the [NGINX INC. ingress controller](https://github.com/nginxinc/kubernetes-ingress).
 
 ### Installation:
