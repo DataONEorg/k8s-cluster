@@ -20,6 +20,18 @@ providers:
 service:
   type: ClusterIP
 
+## PriorityClass, to prevent eviction during high load
+priorityClassName: ingress-critical
+
+## Equal requests & limits for guaranteed QoS class, to prevent eviction during high load
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "2"
+  limits:
+    memory: "2Gi"
+    cpu: "2"
+
 # Trust Forwarded Headers on entrypoints (to preserve client IP)
 ports:
   web:
@@ -108,8 +120,9 @@ hostNetwork: true
 ## Node Affinity & Tolerations needed for hostNetwork mode
 ## Target node:
 nodeSelector:
-  kubernetes.io/hostname: "k8s-dev-node-5"
+  kubernetes.io/hostname: "MUST-BE-OVERRIDDEN-WITH-TARGET-NODE-NAME"
 tolerations:
+  ## Allows running on a control-plane node, when we move it there after retiring ingress-nginx
   - key: "node-role.kubernetes.io/control-plane"
     operator: "Exists"
     effect: "NoSchedule"
