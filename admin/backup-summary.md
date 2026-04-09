@@ -30,4 +30,4 @@ See [backup.md](backup.md) for details of how backup software is installed & con
 
 [^3]: We’re using the S3 API with our secondary Object Storage server `s3.nceas.ucsb.edu` for backups (NCEAS-Ceph RGW cluster in the NDHC), which is then copied to a ZFS server located at NCEAS' downtown office.
 
-[^4]: K8s admins can do a full or partial `velero restore` ([by using filtering options](https://velero.io/docs/main/resource-filtering/)).
+[^4]: K8s admins can do a [full or partial](https://velero.io/docs/main/how-velero-works/#restores) `velero restore` ([by using filtering options](https://velero.io/docs/main/resource-filtering/)).
