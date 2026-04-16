@@ -23,7 +23,7 @@ When adding new entries, make notes below, regarding any special steps needed du
    ```
 
 > [!NOTE]
-> The `qgnet-argo.yaml` file assumes namespace is `qgnet`. Search and replace before applying, if using a different namespace!
+> The `qgnet-argo.yaml` file assumes you're operating in the `qgnet` namespace. If not, search and replace both `name: qgnet` and `namespace: qgnet` before applying!
 
 2. (First time setup only) Install the CRDs for Argo Workflows (had trouble accessing directly from GH, so downloaded them first)
 
