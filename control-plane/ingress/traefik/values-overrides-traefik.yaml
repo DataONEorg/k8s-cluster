@@ -8,7 +8,7 @@
 ##  --version 39.0.6 \
 ##  --namespace traefik \
 ##  --create-namespace \
-##  -f values-dev-overrides-traefik.yml
+##  -f values-overrides-traefik.yaml
 ##
 
 # Enable NGINX Annotation Translation
@@ -32,11 +32,20 @@ resources:
     memory: "2Gi"
     cpu: "2"
 
-# Trust Forwarded Headers on entrypoints (to preserve client IP)
+## Trust Forwarded Headers on entrypoints (to preserve client IP)
 ports:
   web:
-    # Force the container (and thus the host) to bind to 80 instead of 8000
+    ## Force the container (and thus the host) to bind to 80 instead of 8000
     port: 80
+    ## Force HTTP -> HTTPS redirection.
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+    ## This ensures ACME challenges (port 80) aren't redirected and can be solved by cert-manager
+    allowACMEByPass: true
     forwardedHeaders:
       insecure: true
   websecure:
