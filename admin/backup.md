@@ -69,15 +69,14 @@ backuppvc.json
 kubectl create cm backuppvc -n velero --from-file backupPVC.json
 ```
 
-
-### K8s-prod
-Velero 1.18.1 FSB install options:
+### K8s-dev
+Velero 1.18.1 CSI Snapshot install options:
 ```
 velero install \
   --provider aws \
   --plugins velero/velero-plugin-for-aws:v1.14.1 \
-  --bucket k8s-prod \
-  --secret-file /Users/outin/.aws/k8s-prod \
+  --bucket k8s-dev \
+  --secret-file /Users/outin/.aws/k8s-dev-nhdc \
   --backup-location-config region=default,s3Url=https://s3.nceas.ucsb.edu,s3ForcePathStyle=true \
   --snapshot-location-config region=default \
   --use-node-agent \
@@ -87,14 +86,14 @@ velero install \
   --node-agent-configmap=backuppvc
 ```
 
-### K8s-dev
-Velero 1.18.1 CSI Snapshot install options:
+### K8s-prod
+Velero 1.18.1 FSB install options:
 ```
 velero install \
   --provider aws \
   --plugins velero/velero-plugin-for-aws:v1.14.1 \
-  --bucket k8s-dev \
-  --secret-file /Users/outin/.aws/velero \
+  --bucket k8s-prod \
+  --secret-file /Users/outin/.aws/k8s-prod-nhdc \
   --backup-location-config region=default,s3Url=https://s3.nceas.ucsb.edu,s3ForcePathStyle=true \
   --snapshot-location-config region=default \
   --use-node-agent \
