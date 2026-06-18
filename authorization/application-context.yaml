@@ -214,3 +214,6 @@ rules:
   - apiGroups: [ "traefik.io" ]
     resources: [ "middlewares" ]
     verbs: [ "create", "delete", "get", "list", "patch", "update", "watch" ]
+  - apiGroups: [ "traefik.io" ]
+    resources: [ "tlsoptions" ]
+    verbs: [ "create", "delete", "get", "list", "patch", "update", "watch" ]
