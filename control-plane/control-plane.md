@@ -28,7 +28,56 @@ Describe etcd service configuration...
 
 The DataONE k8s Cluster uses the open source [Traefik proxy](https://github.com/kubernetes/ingress-nginx) (pronounced "traffic") to route traffic to k8s services from clients outside the cluster. (This is a replacement for `ingress-nginx`, which was retired in March 2026).
 
-### Installation:
+> [!TIP]
+> To find the available traefik helm chart versions:
+>
+> First add the Traefik helm repository (one-time setup):
+> ```shell
+> helm repo add traefik https://traefik.github.io/charts
+> ```
+> Then refresh the repo and view a list of available versions
+>
+> ```shell
+> helm repo update
+> helm search repo traefik/traefik --versions
+> ```
+
+### Upgrading
+
+> [!IMPORTANT]
+> If you are upgrading an existing deployment, your new pod will stay in `Pending` state until you delete the old pod (`kubectl delete pod <podname>`), because both are trying to bind to the same ports on the same node.
+>
+> **NOTE THAT DELETING THE OLD POD WILL CAUSE A BRIEF INTERRUPTION TO TRAFFIC** (a few seconds, while the new pod starts up.)
+
+1. List the current helm chart and app versions using `helm ls -n traefik`
+2. Refresh the repo as described above, and view available versions: `helm search repo traefik/traefik --versions`
+3. Look at the release notes to determine whether there are any breaking changes or other upgrade requirements:
+   - [Traefik Changelog.md](https://github.com/traefik/traefik-helm-chart/blob/master/traefik/Changelog.md)
+   - [Traefik Chart Releases](https://github.com/traefik/traefik-helm-chart/releases)
+4. Check the source for values-overrides-traefik.yaml, and make sure you customize for the cluster (dev or prod). For example, when deploying in `hostNetwork: true` mode, you need to set `nodeSelector:
+kubernetes.io/hostname` to the correct target node.
+5. Specific upgrading instructions
+   **NOTE** the CRDs must also be updated
+   Upgrade the Standalone Traefik Chart
+
+   > _(abridged excerpt from traefik readme "Upgrading" section; see [latest version here](https://github.com/traefik/traefik-helm-chart?tab=readme-ov-file#upgrading))_
+   >
+   > If you use Helm's native CRD management, you MUST upgrade CRDs before running helm upgrade, since Helm does not update CRDs automatically. See [HIP-0011](https://github.com/helm/community/blob/main/hips/hip-0011.md) for details.
+   >
+   > To upgrade the Traefik chart and its CRDs:
+   >
+   > ```shell
+   > # Update Traefik CRDs
+   > helm show crds traefik/traefik | kubectl apply --server-side --force-conflicts -f -
+   >
+   > # Upgrade Traefik release
+   > helm upgrade traefik traefik/traefik \
+   >      --version=NEW_VERSION_HERE \
+   >      -n traefik       \
+   >      -f values-overrides-traefik.yaml   # customized for this cluster
+   > ```
+
+### Fresh Installation
 
 > [!IMPORTANT]
 > Because we don't yet have an external load-balancer, and because we need access to the original client IP addresses, the Traefik proxy is currently installed in `hostNetwork` mode, meaning it is installed on a specific node, and bound to ports 80 & 443. This single-point-of-failure is not ideal, but it is a temporary solution. When we have an external load balancer in place, Traefik can be installed in `ClusterIP` mode, allowing us to run multiple pods across nodes. At that point, the following instructions should be updated accordingly.
@@ -52,7 +101,7 @@ The DataONE k8s Cluster uses the open source [Traefik proxy](https://github.com/
     CHART_VERSION="39.0.6"
     # - on k8s-node-8 for prod, or k8s-dev-node-5 for dev
     TARGET_NODE="k8s-node-8"
-    
+
     helm upgrade --install traefik traefik/traefik \
         --version=$CHART_VERSION \
         --namespace traefik --create-namespace \
@@ -62,17 +111,17 @@ The DataONE k8s Cluster uses the open source [Traefik proxy](https://github.com/
 
 > [!IMPORTANT]
 > If you are upgrading an existing deployment, your new pod will stay in `Pending` state until you delete the old pod (`kubectl delete pod <podname>`), because both are trying to bind to the same ports on the same node.
-> 
+>
 > **NOTE THAT DELETING THE POD WILL CAUSE A BRIEF INTERRUPTION TO TRAFFIC** (a few seconds, while the new pod starts up.)
 
-2. Once Traefik is running on the target node, you must open ports 80 (for LetsEncrypt verification) and 443 (for web traffic) on the firewall for that node, to allow external traffic to reach the Traefik proxy.
+3. Once Traefik is running on the target node, you must open ports 80 (for LetsEncrypt verification) and 443 (for web traffic) on the firewall for that node, to allow external traffic to reach the Traefik proxy.
 
     ```shell
     ssh k8s-node-8.dataone.org
-    
+
     $ sudo ufw status
     Status: active
-    
+
     To                         Action      From
     --                         ------      ----
     Anywhere                   ALLOW       128.111.196.0/23
@@ -83,29 +132,15 @@ The DataONE k8s Cluster uses the open source [Traefik proxy](https://github.com/
     22/tcp                     ALLOW       128.111.180.0/22
     22/tcp                     ALLOW       128.111.188.0/22
     22/tcp                     ALLOW       128.111.151.0/25
-    
+
     $ sudo ufw allow 80/tcp comment 'Open for LE ACME protocol'
     Rule added
     Rule added (v6)
-    
+
     $ sudo ufw allow 443/tcp comment 'Open for web traffic to Traefik proxy'
     Rule added
     Rule added (v6)
     ```
-
-> [!TIP]
-> To find the available traefik versions:
-> 
-> First add the Traefik helm repository (one-time setup):
-> ```shell
-> helm repo add traefik https://traefik.github.io/charts
-> ```
-> Then refresh the repo and view a list of available versions
->
-> ```shell
-> helm repo update
-> helm search repo traefik/traefik --versions
-> ```
 
 ### Configuration
 
