@@ -68,7 +68,7 @@ kubernetes.io/hostname` to the correct target node.
    >
    > ```shell
    > # Update Traefik CRDs
-   > helm show crds traefik/traefik | kubectl apply --server-side --force-conflicts -f -
+   > helm show crds traefik/traefik --version=NEW_VERSION_HERE | kubectl apply --server-side --force-conflicts -f -
    >
    > # Upgrade Traefik release
    > helm upgrade traefik traefik/traefik \
