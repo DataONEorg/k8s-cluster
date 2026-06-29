@@ -1,18 +1,30 @@
 ## dev cluster values overrides for installing the Traefik ingress controller
 ##
-## Add repo with:
+## # Add repo with:
 ## $ helm repo add traefik https://traefik.github.io/charts
-##
-## Install with:
+## # Update local repo:
+## $ helm repo update
+## # search for latest version:
+## $ helm search repo traefik/traefik
+## # Install with:
 ## $ helm upgrade --install traefik traefik/traefik \
-##  --version 39.0.6 \
-##  --namespace traefik \
-##  --create-namespace \
-##  -f values-overrides-traefik.yaml
+##      --version NEW_VERSION_HERE \
+##      --namespace traefik \
+##      --create-namespace \
+##      -f values-overrides-traefik.yaml   # customized for this cluster!
+##                                         # See nodeSelector.kubernetes.io/hostname
 ##
+providers:
+  kubernetesIngress:
+    enabled: true
+    ## -- List of namespaces from which Ingresses or Services are allowed to declare Middlewares,
+    ## TLSOptions, or ServersTransport references. Requires traefik v3.7.1+.
+    ## []   - (the default) means allow none
+    ## null - means allow all
+    crossProviderNamespaces: null
 
 # Enable NGINX Annotation Translation
-providers:
+experimental:
   kubernetesIngressNginx:
     enabled: true
 
@@ -89,31 +101,41 @@ api:
 
 ## For detailed configuration options, refer to the reference documentation:
 ## https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs
-logs:
-  access:
-    enabled: true
-    ## Set access log format (https://doc.traefik.io/traefik/observability/access-logs/#format)
-    ## @schema enum:["common", "genericCLF", "json", null]; type:[string, null]; default: "common"
-    ##
-    format: json
-    ## https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/#json-format-fields
-    ##
-    fields:
-      general:
-        defaultmode: keep
-        names:
-          ## drop "local" timezone timestamp, since it is UTC, so is duplicated by "startUTC" in log
-          StartLocal: drop
-      headers:
-        defaultmode: drop
-        names:
-          Forwarded: keep
-          Referer: keep
-          User-Agent: keep
-          X-Forwarded-For: keep
-          X-Real-Ip: keep
+log:
+  enabled: true
+  ## Set access log format (https://doc.traefik.io/traefik/observability/access-logs/#format)
+  ## @schema enum:["common", "genericCLF", "json", null]; type:[string, null]; default: "common"
+  ##
+  format: json
+  level: "INFO"  # @schema enum:[TRACE,DEBUG,INFO,WARN,ERROR,FATAL,PANIC]; default: "INFO"
 
-   ## Send to Nick's log aggregator:
+accessLog:
+  # -- To enable access logs
+  enabled: true
+  # -- Set [access log format](https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/#opt-accesslog-format)
+  format:  json
+  ## https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/#json-format-fields
+  ##
+  fields:
+    defaultMode: keep
+    names:
+      ## drop "local" timezone timestamp, since it is UTC, so is duplicated by "startUTC" in log
+      StartLocal: drop
+    headers:
+      defaultMode: keep
+      ## Need the following to explicitly include those headers. Just using
+      ## 'headers.defaultmode: keep' does not cover these:
+      ##
+      names:
+        Forwarded: keep
+        Referer: keep
+        User-Agent: keep
+        X-Forwarded-For: keep
+        X-Real-Ip: keep
+    queryParameters:
+      defaultMode: keep
+
+## Send to Nick's log aggregator:
 #  otlp:
 #    http:
 #      endpoint: http://128.111.85.44:514/
