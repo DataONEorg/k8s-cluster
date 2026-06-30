@@ -1,0 +1,64 @@
+---
+# Source: metacat/templates/middleware-tlsoption-mtls.yaml
+##
+## This file contains the Traefik TLSOption and Middleware definitions required in order to make
+## mutual TLS work.
+##
+## IMPORTANT: ADD THE NAMES OF ANY NEW MIDDLEWARES TO helm/templates/middleware-chain.yaml, OR THEY
+## WON'T BE LOADED!
+##
+---
+# Source: metacat/templates/middleware-tlsoption-mtls.yaml
+## This Middleware passes the client certificate to the upstream Metacat service. It's the Traefik
+## equivalent of the Nginx snippet:
+## nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+##
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: release-name-passcert
+  namespace: namespace
+spec:
+  passTLSClientCert:
+    pem: true
+    info:
+      subject:
+        country: true
+        province: true
+        locality: true
+        organization: true
+        organizationalUnit: true
+        commonName: true
+        serialNumber: true
+        domainComponent: true
+---
+## This Middleware adds the X-Proxy-Key header to the request, and prevents clients spoofing the
+## Ssl-Client-Verify or Ssl-Client-Subject-Dn headers. It's the Traefik equivalent of Nginx snippet:
+## nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+##
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: release-name-customheaders
+  namespace: namespace
+spec:
+  headers:
+    customRequestHeaders:
+      X-Proxy-Key: "your-secret-key-here"
+      Server: traefik
+      Ssl-Client-Verify: ""          # overwrite to prevent client setting
+      Ssl-Client-Subject-Dn: ""      # overwrite to prevent client setting
+---
+##
+## Traefik TLSOption for verifying mutual TLS (mTLS) client cert
+##
+apiVersion: traefik.io/v1alpha1
+kind: TLSOption
+metadata:
+  name: release-name-mtls-policy
+  namespace: namespace
+spec:
+  clientAuth:
+    clientAuthType: VerifyClientCertIfGiven
+    secretNames:
+      - d1-ca-chain

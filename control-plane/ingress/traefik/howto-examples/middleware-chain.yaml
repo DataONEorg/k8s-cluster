@@ -1,0 +1,23 @@
+##
+## Only one middleware can be added to the ingress annotations. This middleware "chain" definition
+## chains together all the other Traefik Middlewares, so only this one needs to be referenced
+## in the ingress annotations.
+##
+## * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+## IMPORTANT: ADD THE NAMES OF ANY NEW MIDDLEWARES TO THIS TEMPLATE, OR THEY WON'T BE LOADED!
+## * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+##
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: release-name-middlewares
+  namespace: namespace
+spec:
+  chain:
+    middlewares:
+      - name: release-name-cors-headers
+      - name: release-name-robots-redirect
+      - name: release-name-sitemap-redirect
+      - name: release-name-test-redirect
+      - name: release-name-passcert           # for mTLS
+      - name: release-name-customheaders      # for mTLS and/or any additional headers

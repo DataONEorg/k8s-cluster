@@ -5,6 +5,7 @@ How to configure a traefik ingress definition to do these things we already do i
 ## Contents:
 * [Request Size and Duration](#request-size-and-duration)
 * [Host Aliases](#host-aliases)
+* [Mutual TLS](#mutual-tls)
 
 ## Request Size and Duration
 
@@ -55,7 +56,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-nginx-example
+  name: traefik-example
   annotations:
     nginx.ingress.kubernetes.io/server-alias: data.nceas.ucsb.edu, ecogrid.ecoinformatics.org
 spec:
@@ -75,3 +76,38 @@ spec:
     - host: data.nceas.ucsb.edu
       http: *aliasedRules     # Use a YAML anchor to reduce repetition
 ```
+
+## Mutual TLS
+
+Also known as "mTLS" or "Mutual Authentication with a Client-Certificate".
+
+```yaml
+## OLD APPROACH - ingress-nginx uses:
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-nginx-example
+  annotations:
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    nginx.ingress.kubernetes.io/auth-tls-secret: knb/d1-ca-chain
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: optional_no_ca
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "10"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_input_headers "X-Proxy-Key: your-secret-key-here";
+#...etc
+---
+## NEW APPROACH - traefik has no direct equivalent. Instead, configure
+## multiple host entries like this:
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik-example
+  annotations:
+    ## Only one middleware can be added to the ingress annotations. This middleware "chain"
+    ## definition chains together all the other Traefik Middlewares, so only this one needs to be
+    ## referenced in the ingress annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: <namespace>-<release>-middlewares@kubernetescrd
+    traefik.ingress.kubernetes.io/router.tls.options: <namespace>-<release>-mtls-policy@kubernetescrd
+```
+You must also deploy the Middleware and TLSOption definitions as shown in the [mtls-setup.yaml example](./howto-examples/mtls-setup.yaml).
+The middlewares defined in that file are, in turn, included via a middleware chain, defined in [middleware-chain.yaml](./howto-examples/middleware-chain.yaml).
