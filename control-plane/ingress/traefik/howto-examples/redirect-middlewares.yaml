@@ -1,0 +1,59 @@
+##
+## This file contains "redirect" middleware definitions for Traefik.
+##
+## IMPORTANT: ADD THE NAMES OF ANY NEW MIDDLEWARES TO helm/templates/middleware-chain.yaml, OR THEY
+## WON'T BE LOADED!
+##
+---
+##
+## Redirect robots.txt requests to the correct location on metacat.
+##
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: <release-name>-robots-redirect
+spec:
+  redirectRegex:
+    regex: "^https?://([^/]+)/robots.txt"
+    replacement: "https://${1}/metacat/robots.txt"
+    permanent: false
+---
+##
+## Redirect sitemap requests to the correct location on metacat.
+## Ignored unless .Values.metacat.sitemap.enabled: true
+##
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: <release-name>-sitemap-redirect
+spec:
+  redirectRegex:
+    regex: "^https?://([^/]+)/(sitemap.+)"
+    replacement: "https://${1}/metacat/sitemaps/${2}"
+    permanent: false
+---
+##
+## Example test redirect
+##
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: <release-name>-evos-redirect
+spec:
+  redirectRegex:
+    regex: "^https://evos.nceas.ucsb.edu/(.*)"
+    replacement: "https://https://goa.nceas.ucsb.edu/${1}"
+    permanent: true
+---
+##
+## Example test redirect
+##
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: <release-name>-test-redirect
+spec:
+  redirectRegex:
+    regex: "^https://([^/]+)/remove-me/(.*)"
+    replacement: "https://${1}/${2}"
+    permanent: true
