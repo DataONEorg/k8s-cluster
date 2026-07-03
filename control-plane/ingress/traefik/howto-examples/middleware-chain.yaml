@@ -15,6 +15,7 @@ metadata:
 spec:
   chain:
     middlewares:
+      - name: release-name-security-headers
       - name: release-name-cors-headers
       - name: release-name-robots-redirect
       - name: release-name-sitemap-redirect

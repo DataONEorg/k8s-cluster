@@ -3,13 +3,18 @@
 How to configure a traefik ingress definition to do these things we already do in (deprecated) ingress-nginx:
 
 ## Contents:
+* [Middleware Chain](#middleware-chain)
 * [Redirects (Rewrite Rules)](#redirects-rewrite-rules)
 * [Enable CORS](#enable-cors)
 * [Adding Headers](#adding-headers)
 * [Request Size and Duration](#request-size-and-duration)
 * [Host Aliases](#host-aliases)
 * [Mutual TLS](#mutual-tls)
-* [Middleware Chain](#middleware-chain)
+* [IP Whitelist](#ip-whitelist)
+
+> [!TIP]
+> Traefik uses `Middleware` to provide much of the functionality equivalent to nginx `annotations` and `configuration-snippets`. 
+> There are many other Middleware options available, in addition  to the fewe mentioned here. The [Traefik docs](https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/overview/) provide a good overview and list of all available Middleware options
 
 ## Request Size and Duration
 
@@ -28,6 +33,20 @@ Metacat requires long upload times and large payloads, which necessitated the cu
 
 > [!NOTE]
 > `ingress-nginx` allowed setting `proxy-send-timeout` individually in each app's ingress config. However, traefik's `transport.respondingTimeouts.readTimeout` can only be set globally in the traefik config itself ([see values overrides](./values-overrides-traefik.yaml)). It cannot be customized for individual apps.
+
+## Middleware Chain
+
+Only one `traefik.ingress.kubernetes.io/router.middlewares` middleware annotation can be added to the ingress definition. If more than one is required, use a middleware chain definition, which chains together all the other Traefik Middlewares; see the example in [middleware-chain.yaml](./howto-examples/middleware-chain.yaml). Then, only this single definition needs to be referenced in the ingress annotations, like so:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik-example
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: <namespace>-<release>-middleware-chain@kubernetescrd
+#...etc
+```
 
 ## Redirects (Rewrite Rules)
 
@@ -122,13 +141,13 @@ metadata:
     traefik.ingress.kubernetes.io/router.middlewares: <namespace>-<release>-cors-headers@kubernetescrd
 #...etc
 ```
-The necessary Middleware definition for CORS headers can be seen in the file [headers-middelware.yaml](./howto-examples/headers-middleware.yaml). 
+The necessary Middleware definition for CORS headers can be seen in the file [headers-middleware.yaml](./howto-examples/headers-middleware.yaml). 
 
 NOTE: Only one middleware can be added to the ingress annotations. If your setup requires more than one, use a middleware chain definition - [see the Middleware Chain section](#middleware-chain).
 
 ## Adding Headers
 
-If you need additional custom headers, follow the example in the [Enable CORS section](#enable-cors)
+If you need additional custom headers, follow the example in the [Enable CORS section](#enable-cors). The [headers-middleware.yaml file](./howto-examples/headers-middleware.yaml) also contains example definitions for: `X-Frame-Options: SAMEORIGIN` and `strict-transport-security: max-age=31536000; includeSubDomains` headers.
 
 ## Host Aliases
 
@@ -214,17 +233,34 @@ You must also deploy the Middleware and TLSOption definitions as shown in the [m
 
 Only one middleware can be added to the ingress annotations. Because mTLS setup requires more than one, a middleware chain definition is used - [see the Middleware Chain section](#middleware-chain).
 
-
-## Middleware Chain
-
-Only one `traefik.ingress.kubernetes.io/router.middlewares` middleware annotation can be added to the ingress definition. If more than one is required, use a middleware chain definition, which chains together all the other Traefik Middlewares; see the example in [middleware-chain.yaml](./howto-examples/middleware-chain.yaml). Then, only this single definition needs to be referenced in the ingress annotations, like so:
+## IP Whitelist
 
 ```yaml
+## OLD APPROACH - ingress-nginx uses:
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-nginx-example
+  annotations:
+    nginx.ingress.kubernetes.io/whitelist-source-range: |
+      128.111.61.0/24,
+      128.111.64.0/22,
+      128.111.85.0/24,
+      128.111.180.0/22,
+      128.111.188.0/22,
+      128.111.196.0/23,
+      207.71.230.208/29
+#...etc
+---
+## NEW APPROACH - define and reference a Middleware object:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: traefik-example
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: <namespace>-<release>-middleware-chain@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: <namespace>-<release>-ip-allowlist@kubernetescrd
 #...etc
 ```
+You must also deploy the `<release>-ip-allowlist` Middleware definition as shown in the [ip-allowlist-middleware.yaml example](./howto-examples/ip-allowlist-middleware.yaml).
+
+NOTE: Only one middleware can be added to the ingress annotations. If your setup requires more than one, use a middleware chain definition - [see the Middleware Chain section](#middleware-chain).

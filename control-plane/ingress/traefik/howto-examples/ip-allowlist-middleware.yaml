@@ -1,0 +1,18 @@
+##
+## This file contains "ipAllowList" middleware definitions for Traefik.
+##
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: <release-name>-ip-allowlist
+spec:
+  ipAllowList:
+    ## Example: Allow only NCEAS hosts
+    sourceRange:
+      - 128.111.61.0/24
+      - 128.111.64.0/22
+      - 128.111.85.0/24
+      - 128.111.180.0/22
+      - 128.111.188.0/22
+      - 128.111.196.0/23
+      - 207.71.230.208/29
