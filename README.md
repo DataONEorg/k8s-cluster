@@ -41,7 +41,7 @@ Documentation is organized into an overview, and then separate config files and 
 - [Ingress Controller](./control-plane/control-plane.md#Ingress-Controller)
   - [Installation](./control-plane/control-plane.md#Installation)
   - [Configuration](./control-plane/control-plane.md#Configuration)
-    - [Traefik HOWTO](./control-plane/traefik/traefik-HOWTO.md) - Configuring your Application-Specific Ingress
+    - [Traefik HOWTO](./control-plane/ingress/traefik/traefik-HOWTO.md) - Configuring your Application-Specific Ingress
 
 ## [Networking Configuration](./network/network.md)
 - [Physical network](./network/network.md#Physical-network)
