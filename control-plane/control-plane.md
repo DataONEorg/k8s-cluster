@@ -159,11 +159,14 @@ An *IngressClass* resource is automatically created by the helm installation, so
 
 When IngressClass is started it will search all namespaces for `Ingress` objects with an ingress class that matches the ingress class name `traefik`. Since we are using the [Traefik `kubernetesIngressNginx` Provider](https://doc.traefik.io/traefik/migrate/v3/#ingress-nginx-provider), it will also search for `nginx` ingress objects and interpret those.
 
-#### Ingress
+#### Application-Specific Ingress Resources
 
 An [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#the-ingress-resource) resource specifies the routing from the ingress controller to a k8s service. Each k8s application that runs on the k8s cluster must create an `Ingress` resource in order to provide routing. In addition, the `cert-manager` facility interacts with the `Ingress` resource to provide a Let's Encrypt certificate for TLS termination for the service (this is described in the `Authentication` section).
 
 These ingress resources are created in the same namespace as the services that they route to, so for example, the `metadig` ingress is defined in the `metadig` namespace, where the `metadig-controller` service that it routes to is located.
+
+> [!TIP]
+> see [traefik/traefik-HOWTO.md](./ingress/traefik/traefik-HOWTO.md) for examples of how to configure your specific application for custom ingress functionality such as performing redirects, handling large requests, setting CORS and other headers, making mTLS work, IP whitelisting, etc.
 
 ### Future Goals
 
