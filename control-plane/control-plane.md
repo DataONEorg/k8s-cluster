@@ -26,7 +26,7 @@ Describe etcd service configuration...
 
 ## Ingress Controller
 
-The DataONE k8s Cluster uses the open source [Traefik proxy](https://github.com/kubernetes/ingress-nginx) (pronounced "traffic") to route traffic to k8s services from clients outside the cluster. (This is a replacement for `ingress-nginx`, which was retired in March 2026).
+The DataONE k8s Cluster uses the open source [Traefik proxy](https://github.com/kubernetes/ingress-nginx) (pronounced "traffic") to route traffic to k8s services from clients outside the cluster. (This is a replacement for `ingress-nginx`, which was retired in March 2026). Traefik may be installed or upgraded via the [official helm chart](https://github.com/traefik/traefik-helm-chart/releases), using the values overrides defined in [./ingress/traefik/values-overrides-traefik.yaml](./ingress/traefik/values-overrides-traefik.yaml) 
 
 > [!TIP]
 > To find the available traefik helm chart versions:
@@ -42,12 +42,12 @@ The DataONE k8s Cluster uses the open source [Traefik proxy](https://github.com/
 > helm search repo traefik/traefik --versions
 > ```
 
-### Upgrading
+### Temporary `hostNetwork` Mode
 
 > [!IMPORTANT]
-> If you are upgrading an existing deployment, your new pod will stay in `Pending` state until you delete the old pod (`kubectl delete pod <podname>`), because both are trying to bind to the same ports on the same node.
->
-> **NOTE THAT DELETING THE OLD POD WILL CAUSE A BRIEF INTERRUPTION TO TRAFFIC** (a few seconds, while the new pod starts up.)
+> Because we don't yet have an external load-balancer, and because we need access to the original client IP addresses, the Traefik proxy is currently installed in `hostNetwork` mode, meaning it is installed on a specific node, and bound to ports 80 & 443. This single-point-of-failure is not ideal, but it is a temporary solution. When we have an external load balancer in place, Traefik can be installed in `ClusterIP` mode, allowing us to run multiple pods across nodes. At that point, the following instructions should be updated accordingly.
+
+### Upgrading
 
 1. List the current helm chart and app versions using `helm ls -n traefik`
 2. Refresh the repo as described above, and view available versions: `helm search repo traefik/traefik --versions`
@@ -56,32 +56,39 @@ The DataONE k8s Cluster uses the open source [Traefik proxy](https://github.com/
    - [Traefik Chart Releases](https://github.com/traefik/traefik-helm-chart/releases)
 4. Check the source for values-overrides-traefik.yaml, and make sure you customize for the cluster (dev or prod). For example, when deploying in `hostNetwork: true` mode, you need to set `nodeSelector:
 kubernetes.io/hostname` to the correct target node.
-5. Specific upgrading instructions
-   **NOTE** the CRDs must also be updated
-   Upgrade the Standalone Traefik Chart
+5. Upgrade the Standalone Traefik Chart. **NOTE** the CRDs must also be updated!
 
-   > _(abridged excerpt from traefik readme "Upgrading" section; see [latest version here](https://github.com/traefik/traefik-helm-chart?tab=readme-ov-file#upgrading))_
+   _(abridged excerpt from traefik readme "Upgrading" section; see [latest version here](https://github.com/traefik/traefik-helm-chart?tab=readme-ov-file#upgrading))_ (IMPORTANT: don't forget to set the correct values for $CHART_VERSION and $TARGET_NODE, below!):
+
+   > _If you use Helm's native CRD management, you MUST upgrade CRDs before running helm upgrade, since Helm does not update CRDs automatically. See [HIP-0011](https://github.com/helm/community/blob/main/hips/hip-0011.md) for details._
    >
-   > If you use Helm's native CRD management, you MUST upgrade CRDs before running helm upgrade, since Helm does not update CRDs automatically. See [HIP-0011](https://github.com/helm/community/blob/main/hips/hip-0011.md) for details.
-   >
-   > To upgrade the Traefik chart and its CRDs:
+   > _To upgrade the Traefik chart and its CRDs:_
    >
    > ```shell
+   > # EDIT WITH YOUR CHART VERSION:
+   > CHART_VERSION="41.0.1"
+   > 
    > # Update Traefik CRDs
-   > helm show crds traefik/traefik --version=NEW_VERSION_HERE \
+   > helm show crds traefik/traefik --version=$CHART_VERSION \
    >         | kubectl apply --server-side --force-conflicts -f -
    >
+   > # - Use k8s-node-8 for prod, or k8s-dev-node-5 for dev:
+   > TARGET_NODE="k8s-node-8"
+   > 
    > # Upgrade Traefik release
    > helm upgrade traefik traefik/traefik \
-   >      --version=NEW_VERSION_HERE \
-   >      -n traefik       \
-   >      -f values-overrides-traefik.yaml   # customized for this cluster
+   >     --version=$CHART_VERSION         \
+   >     -n traefik                       \
+   >     --set "nodeSelector.kubernetes\.io/hostname=${TARGET_NODE}" \
+   >     -f values-overrides-traefik.yaml
    > ```
 
-### Fresh Installation
+> [!WARNING]
+> If you are upgrading an existing deployment, and Traefik is running in hostNetwork mode ([see note above](#temporary-hostnetwork-mode)), your new pod will stay in `Pending` state until you delete the old pod (`kubectl delete pod <podname>`), because both are trying to bind to the same ports on the same node.
+>
+> **NOTE THAT DELETING THE OLD POD WILL CAUSE A BRIEF INTERRUPTION TO TRAFFIC** (a few seconds, while the new pod starts up.)
 
-> [!IMPORTANT]
-> Because we don't yet have an external load-balancer, and because we need access to the original client IP addresses, the Traefik proxy is currently installed in `hostNetwork` mode, meaning it is installed on a specific node, and bound to ports 80 & 443. This single-point-of-failure is not ideal, but it is a temporary solution. When we have an external load balancer in place, Traefik can be installed in `ClusterIP` mode, allowing us to run multiple pods across nodes. At that point, the following instructions should be updated accordingly.
+### Fresh Installation
 
 1. First create a `PriorityClass` object if it does not already exist, using the definition in [./ingress/traefik/priorityclass--traefik.yaml](./ingress/traefik/priorityclass--traefik.yaml). This ensures that the Traefik pod is never evicted from the target node, even if that node is under resource pressure (see [Kubernetes documentation](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption) for details):
 
@@ -94,7 +101,7 @@ kubernetes.io/hostname` to the correct target node.
     kubectl create -f priorityclass--traefik.yaml
     ```
 
-2. Traefik may be installed or upgraded via the [official helm chart](https://github.com/traefik/traefik-helm-chart/releases), using the values overrides defined in [./ingress/traefik/values-overrides-traefik.yaml](./ingress/traefik/values-overrides-traefik.yaml) **(IMPORTANT: don't forget to set the correct values for `$CHART_VERSION` and `$TARGET_NODE`, below!)**:
+2. Install **(IMPORTANT: don't forget to set the correct values for `$CHART_VERSION` and `$TARGET_NODE`, below!)**:
 
     ```shell
     # example: to install:
@@ -109,11 +116,6 @@ kubernetes.io/hostname` to the correct target node.
         --set "nodeSelector.kubernetes\.io/hostname=${TARGET_NODE}" \
         -f values-overrides-traefik.yaml
     ```
-
-> [!IMPORTANT]
-> If you are upgrading an existing deployment, your new pod will stay in `Pending` state until you delete the old pod (`kubectl delete pod <podname>`), because both are trying to bind to the same ports on the same node.
->
-> **NOTE THAT DELETING THE POD WILL CAUSE A BRIEF INTERRUPTION TO TRAFFIC** (a few seconds, while the new pod starts up.)
 
 3. Once Traefik is running on the target node, you must open ports 80 (for LetsEncrypt verification) and 443 (for web traffic) on the firewall for that node, to allow external traffic to reach the Traefik proxy.
 
