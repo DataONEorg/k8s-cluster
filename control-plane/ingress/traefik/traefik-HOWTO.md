@@ -50,6 +50,8 @@ metadata:
 
 ## Redirects (Rewrite Rules)
 
+(Also applies to the special case of redirecting `www.*`, which must be done via `redirectRegex` Middleware, since Traefik has no equivalent of `nginx.ingress.kubernetes.io/from-to-www-redirect: "true"`)
+
 Redirects are defined in Middleware objects:
 
 ```yaml
