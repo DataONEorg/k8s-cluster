@@ -3,11 +3,11 @@
 How to configure a traefik ingress definition to do these things we already do in (deprecated) ingress-nginx:
 
 ## Contents:
+* [Request Size and Duration](#request-size-and-duration)
 * [Middleware Chain](#middleware-chain)
 * [Redirects (Rewrite Rules)](#redirects-rewrite-rules)
 * [Enable CORS](#enable-cors)
 * [Adding Headers](#adding-headers)
-* [Request Size and Duration](#request-size-and-duration)
 * [Host Aliases](#host-aliases)
 * [Mutual TLS](#mutual-tls)
 * [IP Whitelist](#ip-whitelist)
