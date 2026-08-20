@@ -18076,10 +18076,10 @@ spec:
         resources:
           limits:
             cpu: 100m
-            memory: 200Mi
+            memory: 2000Mi
           requests:
             cpu: 100m
-            memory: 100Mi
+            memory: 1000Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
