@@ -179,3 +179,60 @@ As stated above: if a PV's `storageClass` was configured with a `persistentVolum
 > [!CAUTION]
 > Exercise care and double-check you're deleting the right things in the right context!
 
+---
+## Troubleshooting
+
+### `staging path [...] is not a mountpoint`
+
+If a pod is stuck in "ContainerCreating" status (e.g. following a cordoning/reboot of a node machine), and the describe command shows:
+```shell
+ Events:
+   Type     Reason       Age   From     Message
+   ----     ------       ----  ----     -------       
+   Warning  FailedMount  10s   kubelet  MountVolume.SetUp failed for volume "pvc-487406d4-3e5f-4cda-9fd8-f7fd2d03d753" : rpc error: code = Internal desc = staging path /var/lib/kubelet/plugins/kubernetes.io/csi/cephfs.csi.ceph.com/548d68c9f3406069d6d1041f74e5f92e0aa9e425892872e8f51ac448c0f3c121/globalmount for volume 0001-0024-8aa4d4a0-a209-11ea-baf5-ffc787bfc812-0000000000000001-b74a54df-48b0-4372-b7df-07bab0471bbc is not a mountpoint
+```
+
+
+...then find which node your pod is on (kubectl get pod -owide...), and ssh to that node - e.g. ssh k8s-node-8. Then:
+
+1. Important: first check the volume is not actually mounted:
+
+   ```shell
+     # should not exist:
+     mount | grep "ac448c0f3c121"
+     # should be empty:
+     sudo ls -la /var/lib/kubelet/plugins/kubernetes.io/csi/cephfs.csi.ceph.com/548d68c9f3406069d6d1041f74e5f92e0aa9e425892872e8f51ac448c0f3c121/globalmount
+   ```
+
+2. Delete the parent directory
+   ```shell
+   sudo rm -rf /var/lib/kubelet/plugins/kubernetes.io/csi/cephfs.csi.ceph.com/548d68c9f3406069d6d1041f74e5f92e0aa9e425892872e8f51ac448c0f3c121
+   ```
+3. If your hung pod doesn't recover after a restart, try restarting the ceph-csi driver on that same node:
+   ```shell
+   $ kc get pods -n ceph-csi-cephfs -owide
+   NAME                                    READY STATUS  AGE  IP             NODE
+   ceph-csi-cephfs-csi-cephfsplugin-5bl9g  3/3   Running 4s   128.111.85.147 k8s-node-8
+   ceph-csi-cephfs-csi-cephfsplugin-fjnk9  3/3   Running 456d 128.111.85.212 k8s-node-6
+   [...etc]
+
+   # eg for node 8:
+   kc delete pod -n ceph-csi-cephfs ceph-csi-cephfs-csi-cephfsplugin-5bl9g
+   pod "ceph-csi-cephfs-csi-cephfsplugin-5bl9g" deleted
+
+   # It will be recreated instantly)
+   ```
+
+4. Finally, if another pod restart doesn't work, restart the kubectl daemon on the node where your pod is located
+   ```shell
+   brooke@k8s-node-8:~$ sudo systemctl restart kubelet
+
+   # check it restarted ok:
+   brooke@k8s-node-8:~$ sudo systemctl status kubelet
+   ● kubelet.service - kubelet: The Kubernetes Node Agent
+     Loaded: loaded (/lib/systemd/system/kubelet.service; enabled; vendor preset: enabled)
+    Drop-In: /etc/systemd/system/kubelet.service.d
+             └─10-kubeadm.conf
+     Active: active (running) since Thu 2026-08-20 08:38:36 PDT; 3s ago
+   [...etc]
+   ```
