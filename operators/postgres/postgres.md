@@ -519,7 +519,29 @@ kubectl cnpg install generate --help
 kubectl cnpg install generate > cnpg-operator.yaml
 ```
 
-And then apply them, being sure to use the `--server-side` flag.
+Then edit the yaml for the `Deployment` secction to increase the memory limits from:
+
+```yaml
+          limits:
+            cpu: 100m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+```
+
+to:
+
+```yaml
+          limits:
+            cpu: 100m
+            memory: 2000Mi
+          requests:
+            cpu: 100m
+            memory: 1000Mi
+```
+
+Finally, apply them, being sure to use the `--server-side` flag.
 
 ```
 ❯ kubectl apply -f cnpg-operator.yaml --server-side --force-conflicts
@@ -556,9 +578,22 @@ Now, the `cnpg-controller-manager` pod seems has started and is running successf
 
 ## CloudNativePG Operator Upgrades
 
+> [!TIP]
+> The chapter on [CNPG Upgrades](https://cloudnative-pg.io/documentation/1.27/installation_upgrade/#upgrades) has useful information on other options that might need to be set in order to stagger the postgres Cluster and instance migrations.
+
 CloudNativePG releases new versions of the operator roughly monthly, and recommends [monthly upgrades](https://cloudnative-pg.io/documentation/1.27/installation_upgrade/#upgrades). The current operator suppors their `v1` API, and they state that these should be backwards compatible. They highly recommend upgrading to the current version monthly, and applying each upgrade in the order in which they are released (don't skip versions). When upgrading, the process involves two steps:
 
 1) Upgrade the operator itself by re-applying the new manifest for the new version.
 2) Upgrade the Cluster instance for all databases, which happens automatically
 
-The chapter on [CNPG Upgrades](https://cloudnative-pg.io/documentation/1.27/installation_upgrade/#upgrades) has useful information on other options that might need to be set in order to stagger the postgres Cluster and instance migrations.
+> [!IMPORTANT]
+> Don't forget to edit the yaml for the `Deployment` secction to increase the memory limits to:
+>
+> ```yaml
+>           limits:
+>             cpu: 100m
+>             memory: 2000Mi
+>           requests:
+>             cpu: 100m
+>             memory: 1000Mi
+> ```
