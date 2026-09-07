@@ -14,7 +14,7 @@ How to configure a traefik ingress definition to do these things we already do i
 
 > [!TIP]
 > Traefik uses `Middleware` to provide much of the functionality equivalent to nginx `annotations` and `configuration-snippets`. 
-> There are many other Middleware options available, in addition  to the fewe mentioned here. The [Traefik docs](https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/overview/) provide a good overview and list of all available Middleware options
+> There are many other Middleware options available, in addition to the few mentioned here. The [Traefik docs](https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/overview/) provide a good overview and list of all available Middleware options
 
 ## Request Size and Duration
 
@@ -22,14 +22,14 @@ Metacat requires long upload times and large payloads, which necessitated the cu
 
 | Nginx Annotation        | Override | Summary                                     | Traefik Equivalent & default value                                  | Action   |
 |-------------------------|----------|---------------------------------------------|---------------------------------------------------------------------|----------|
-| client-body-buffer-size | 1m       | Sets memory buffer for request body         | N/A (Streaming is default)                                          | ✅        |
-| client_max_body_size    | 0        | Max allowed size of request body            | Unlimited (Streaming is default)                                    | ✅        |
-| proxy-body-size         | 0        | Proxy-level max request body size           | Unlimited (Streaming is default)                                    | ✅        |
-| proxy-buffering         | off      | Disables buffering of the response body     | Default Behavior Streaming                                          | ✅        |
-| proxy-read-timeout      | 3600     | Timeout for reading response from backend   | `respondingTimeouts.responseHeaderTimeout` 0s (Unlimited)           | ✅        |
-| proxy-request-buffering | off      | Disables buffering of the request body      | Default Behavior Streaming                                          | ✅        |
+| client-body-buffer-size | 1m       | Sets memory buffer for request body         | N/A (Streaming is default)                                          | ✅       |
+| client_max_body_size    | 0        | Max allowed size of request body            | Unlimited (Streaming is default)                                    | ✅       |
+| proxy-body-size         | 0        | Proxy-level max request body size           | Unlimited (Streaming is default)                                    | ✅       |
+| proxy-buffering         | off      | Disables buffering of the response body     | Default Behavior Streaming                                          | ✅       |
+| proxy-read-timeout      | 3600     | Timeout for reading response from backend   | `respondingTimeouts.responseHeaderTimeout` 0s (Unlimited)           | ✅       |
+| proxy-request-buffering | off      | Disables buffering of the request body      | Default Behavior Streaming                                          | ✅       |
 | proxy-send-timeout      | 3600     | Timeout for streaming request to backend    | `transport.respondingTimeouts.readTimeout`: default 60s             | ⚠️ 3600s |
-| send-timeout            | 3600     | Timeout for transmitting response to client | `transport.respondingTimeouts.writeTimeout`: default 0s (Unlimited) | ✅        |
+| send-timeout            | 3600     | Timeout for transmitting response to client | `transport.respondingTimeouts.writeTimeout`: default 0s (Unlimited) | ✅       |
 
 > [!NOTE]
 > `ingress-nginx` allowed setting `proxy-send-timeout` individually in each app's ingress config. However, traefik's `transport.respondingTimeouts.readTimeout` can only be set globally in the traefik config itself ([see values overrides](./values-overrides-traefik.yaml)). It cannot be customized for individual apps.
@@ -51,6 +51,24 @@ metadata:
 ## Redirects (Rewrite Rules)
 
 (Also applies to the special case of redirecting `www.*`, which must be done via `redirectRegex` Middleware, since Traefik has no equivalent of `nginx.ingress.kubernetes.io/from-to-www-redirect: "true"`)
+
+> [!IMPORTANT]
+> host rules are evaluated before rewrite rules. This means that if you are rewriting a hostname (e.g. redirecting `www.*`, or redirecting `permafrost.arcticdata.io` to `arcticdata.io/catalog/portals/permafrost` etc), then your ingress must also have a `spec.rule` that matches the pre-rewrite hostname; e.g.:
+> ```yaml
+> spec:
+> [...]
+>   rules:
+>   - host: permafrost.arcticdata.io
+>     http:
+>       paths:
+>       - backend:
+>           service:
+>             name: mcuiarctic-metacatui
+>             port:
+>               number: 80
+>         path: /
+>         pathType: Prefix
+> ```
 
 Redirects are defined in Middleware objects:
 
@@ -204,7 +222,7 @@ spec:
 
 ## Mutual TLS
 
-Also known as "mTLS" or "Mutual Authentication with a Client-Certificate".
+Also known as "mTLS" or "Mutual Authentication with a Client-Certificate."
 
 ```yaml
 ## OLD APPROACH - ingress-nginx uses:

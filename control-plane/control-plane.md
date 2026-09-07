@@ -146,21 +146,18 @@ kubernetes.io/hostname` to the correct target node.
 
 ### Configuration
 
-> [!WARNING]
-> NGINX support is deprecated and will be removed in future!
->
-> Even though our Traefik setup currently supports legacy `nginx` ingress classes, **please DO NOT use `nginx`-specific config for any new ingress resources**. Use only the `traefik` ingress class, and [standard Traefik annotations, providers or Middleware](https://doc.traefik.io/traefik/reference/routing-configuration/dynamic-configuration-methods/#using-kubernetes-providers)
+
 
 #### Ingress Class
 Traefik requires that a k8s [IngressClass](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class) is defined. This associates Traefik with one class of ingress. Using this approach, it is therefore possible to have multiple ingress controllers of different types (e.g. HAproxy, NGINX, additional Traefik proxies, etc.), running on the same cluster.
 
 An *IngressClass* resource is automatically created by the helm installation, so does not need to be manually created or configured.
 
-When IngressClass is started it will search all namespaces for `Ingress` objects with an ingress class that matches the ingress class name `traefik`. Since we are using the [Traefik `kubernetesIngressNginx` Provider](https://doc.traefik.io/traefik/migrate/v3/#ingress-nginx-provider), it will also search for `nginx` ingress objects and interpret those.
+When IngressClass is started it will search all namespaces for `Ingress` objects with an ingress class that matches the ingress class name `traefik`.
 
 #### Application-Specific Ingress Resources
 
-An [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#the-ingress-resource) resource specifies the routing from the ingress controller to a k8s service. Each k8s application that runs on the k8s cluster must create an `Ingress` resource in order to provide routing. In addition, the `cert-manager` facility interacts with the `Ingress` resource to provide a Let's Encrypt certificate for TLS termination for the service (this is described in the `Authentication` section).
+An [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#the-ingress-resource) resource specifies the routing from the ingress controller to a k8s service. Each k8s application that runs on the k8s cluster must create an `Ingress` resource in order to provide routing. In addition, the `cert-manager` facility interacts with the `Ingress` resource to provide a Let's Encrypt certificate for TLS termination for the service (this is described in the [`Authentication` section](../authentication/letsencrypt.md)).
 
 These ingress resources are created in the same namespace as the services that they route to, so for example, the `metadig` ingress is defined in the `metadig` namespace, where the `metadig-controller` service that it routes to is located.
 
@@ -170,5 +167,4 @@ These ingress resources are created in the same namespace as the services that t
 ### Future Goals
 
 - Install an external load balancer, and configure Traefik to use `ClusterIP` mode, allowing us to run multiple pods across nodes, and remove the single-point-of-failure of the current `hostNetwork` mode.
-- Retire existing `ingress-nginx` ingress resources to use the `traefik` ingress class instead of `nginx`, adapting custom nginx configuration snippets and annotations to the Traefik equivalent as needed.
 - Move to the Kubernetes Gateway API instead of the Ingress spec. Traefik supports the Gateway API specification

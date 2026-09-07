@@ -144,16 +144,6 @@ accessLog:
 #experimental:
 #  otlpLogs: true
 
-
-## WHEN WE DELETE ingress-nginx CONTROLLER: add this config to traefik values, so Traefik takes
-## ownership of the nginx class, thus picking up all existing manifests without modification
-##
-#ingressClass:
-#  enabled: true
-#  isDefaultClass: true
-#  name: nginx
-
-
 ################ Begin hostNetwork mode Section ################
 ## Run in hostNetwork mode to preserve client IP.
 ## Enable hostNetwork mode:
