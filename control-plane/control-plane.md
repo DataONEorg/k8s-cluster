@@ -72,8 +72,8 @@ kubernetes.io/hostname` to the correct target node.
    > helm show crds traefik/traefik --version=$CHART_VERSION \
    >         | kubectl apply --server-side --force-conflicts -f -
    >
-   > # - Use k8s-node-8 for prod, or k8s-dev-node-5 for dev:
-   > TARGET_NODE="k8s-node-8"
+   > # - on docker-ucsb-4 for prod, or docker-dev-ucsb-1 for dev
+   > TARGET_NODE="docker-ucsb-4"
    > 
    > # Upgrade Traefik release
    > helm upgrade traefik traefik/traefik \
@@ -105,14 +105,13 @@ kubernetes.io/hostname` to the correct target node.
 
     ```shell
     # example: to install:
-    # - chart version 39.0.6 (deploys Traefik 3.6.11)
-    CHART_VERSION="39.0.6"
-    # - on k8s-node-8 for prod, or k8s-dev-node-5 for dev
-    TARGET_NODE="k8s-node-8"
+    # CHART_VERSION="41.0.1"
+    # - on docker-ucsb-4 for prod, or docker-dev-ucsb-1 for dev
+    TARGET_NODE="docker-ucsb-4"
 
     helm upgrade --install traefik traefik/traefik \
         --version=$CHART_VERSION \
-        --namespace traefik --create-namespace \
+        --namespace traefik \
         --set "nodeSelector.kubernetes\.io/hostname=${TARGET_NODE}" \
         -f values-overrides-traefik.yaml
     ```
@@ -120,7 +119,7 @@ kubernetes.io/hostname` to the correct target node.
 3. Once Traefik is running on the target node, you must open ports 80 (for LetsEncrypt verification) and 443 (for web traffic) on the firewall for that node, to allow external traffic to reach the Traefik proxy.
 
     ```shell
-    ssh k8s-node-8.dataone.org
+    ssh docker-ucsb-4.dataone.org
 
     $ sudo ufw status
     Status: active
