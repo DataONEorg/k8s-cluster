@@ -202,6 +202,8 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: cephfs-static-pv
+  labels:
+    velero.io/exclude-from-backup: "true"  # must add this for static PVs
 spec:
   accessModes:
   - ReadWriteMany
@@ -260,6 +262,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: cephfs-static-pvc
   namespace: ceph-csi-cephfs
+  labels:
+    velero.io/exclude-from-backup: "true"  # must add this for static PVCs
 spec:
   accessModes:
   - ReadWriteMany
